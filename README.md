@@ -95,10 +95,9 @@ Directory notes
 - Controllers, services and repositories live under `src/module/<feature>/`.
 - Middleware lives under `src/middleware/`.
 
-Next steps / suggestions
-- Implement appointment endpoints and controllers (currently empty).
-- Add tests for core flows (auth, create availability, doctor listing).
-- Consider documenting request/response schemas or adding OpenAPI spec.
+Next steps 
+- time slot generation APIs
+-doctors appointment booking APIs
 
 If you want, I can:
 - generate a full OpenAPI spec from these routes,
