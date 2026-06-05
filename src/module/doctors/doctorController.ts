@@ -1,8 +1,7 @@
-import type { Request, Response } from "express";
+import type {  Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { DoctorRepository } from "./doctorRepository.js";
 import { DoctorService } from "./doctorService.js";
-import type { AuthRequest } from "../../utils/authRequest.js";
 import { generateFileUrl } from "../../utils/generateFileUrl.js";
 
 const doctorRepository = new DoctorRepository();
@@ -85,8 +84,8 @@ export const getDoctorById = asyncHandler(
 );
 
 export const getMyDoctorProfile = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
-        const userId = req.user.id;
+    async (req: Request, res: Response) => {
+        const userId = req.user!.id;
         const doctor: any = await doctorService.getMyDoctorProfile(userId);
         if (doctor.user?.profile_picture) {
             doctor.user.profile_picture = generateFileUrl(
@@ -118,10 +117,10 @@ export const updateDoctor = asyncHandler(
 );
 
 export const updateDoctorPhoto = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         const doctorId = Number(req.params.id);
-        const loggedInUserId = req.user.id;
-        const loggedInUserRole = req.user.role;
+        const loggedInUserId = req.user!.id;
+        const loggedInUserRole = req.user!.role;
         if (!req.file) {
             return res.status(400).json({
                 success: false,

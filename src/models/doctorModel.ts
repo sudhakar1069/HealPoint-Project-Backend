@@ -1,7 +1,7 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-interface DoctorAttributes {
+export interface DoctorAttributes {
     id?: number;
     user_id: number;
     specialization: string;
@@ -14,7 +14,7 @@ interface DoctorAttributes {
 
 }
 
-interface DoctorCreationAttributes
+export interface DoctorCreationAttributes
     extends Optional<
         DoctorAttributes,
         "id" | "is_first_login" | "password_changed_at"> { }

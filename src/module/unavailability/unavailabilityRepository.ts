@@ -1,15 +1,15 @@
-import DoctorUnavailability from "../../models/unavailabilityModel.js";
+
+import DoctorUnavailability, { type DoctorUnavailabilityCreationAttributes }
+    from "../../models/unavailabilityModel.js";
 
 export class DoctorUnavailabilityRepository {
 
-    async createUnavailability(data: any) {
+    async createUnavailability(data: DoctorUnavailabilityCreationAttributes) {
         return await DoctorUnavailability.create(data);
     }
     async getDoctorUnavailabilities(doctorId: number) {
         return await DoctorUnavailability.findAll({
-            where: {
-                doctor_id: doctorId
-            },
+            where: { doctor_id: doctorId },
             order: [
                 ["unavailable_date", "ASC"],
                 ["start_time", "ASC"]
@@ -30,7 +30,7 @@ export class DoctorUnavailabilityRepository {
         });
     }
 
-    async updateUnavailability(id: number, data: any) {
+    async updateUnavailability(id: number, data: Partial<DoctorUnavailabilityCreationAttributes>) {
         await DoctorUnavailability.update(data,
             { where: { id } }
         );

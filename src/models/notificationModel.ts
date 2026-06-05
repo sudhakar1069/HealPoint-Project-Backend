@@ -1,7 +1,7 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-interface NotificationAttributes {
+export interface NotificationAttributes {
     id: number;
     title: string;
     message: string;
@@ -9,10 +9,10 @@ interface NotificationAttributes {
     is_read: boolean;
 }
 
-interface NotificationCreation
+export interface NotificationCreationAttributes
     extends Optional<NotificationAttributes, "id" | "is_read"> { }
 
-export class Notification extends Model<NotificationAttributes, NotificationCreation>
+export class Notification extends Model<NotificationAttributes, NotificationCreationAttributes>
 
     implements NotificationAttributes {
     declare id: number;

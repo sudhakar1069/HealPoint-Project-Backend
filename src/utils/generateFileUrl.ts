@@ -1,4 +1,5 @@
-export const generateFileUrl = (req: any, filename?: string | null) => {
+import type { Request } from "express";
+export const generateFileUrl = (req: Request, filename?: string | null) => {
     if (!filename) return null;
-    return `https://${req.get("host")}/uploads/${filename}`;
+    return `${req.protocol}://${req.get("host")}/uploads/${filename}`;
 };

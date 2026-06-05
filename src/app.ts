@@ -5,7 +5,12 @@ import patientRoutes from "./module/patients/patientRoutes.js"
 import departmentRoutes from "./module/departments/departmentRoutes.js"
 import availabilityRoutes from "./module/availability/availabilityRoutes.js"
 import unavailabilityRoutes from "./module/unavailability/unavailabilityRoutes.js"
+import specialAvailabilityRoutes from "./module/specialAvailabilty/specialAvailabilityRouter.js"
+import slotRoutes from "./module/slots/slotRoutes.js"
+import appointmentRoutes from "./module/appointments/appointmentRoutes.js"
+import paymentRoutes from "./module/payment/paymentRoutes.js"
 import notificationRoutes from "./module/notifications/notificationRoutes.js"
+import earningRoutes from "./module/earnings/earningRoutes.js"
 import { errorHandler } from "./middleware/errorHandler.js";
 import "./models/associationsModel.js"
 import cors from "cors"
@@ -28,8 +33,13 @@ app.use("/api", doctorRoutes)
 app.use("/api", patientRoutes)
 app.use("/api", availabilityRoutes)
 app.use("/api", unavailabilityRoutes)
+app.use("/api", specialAvailabilityRoutes)
 app.use("/api", departmentRoutes)
+app.use("/api", slotRoutes)
+app.use("/api", appointmentRoutes)
+app.use("/api", paymentRoutes)
 app.use("/api/notifications", notificationRoutes)
+app.use("/api", earningRoutes)
 app.use(errorHandler);
 
 export default app;

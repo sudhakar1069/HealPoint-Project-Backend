@@ -1,7 +1,8 @@
-import DoctorAvailability from "../../models/availabilityModel.js";
+import DoctorAvailability,
+{ type DoctorAvailabilityAttributes, type DoctorAvailabilityCreationAttributes } from "../../models/availabilityModel.js";
 
 export class DoctorAvailabilityRepository {
-    async createAvailability(data: any) {
+    async createAvailability(data: DoctorAvailabilityCreationAttributes) {
         return await DoctorAvailability.create(data);
     }
 
@@ -16,10 +17,7 @@ export class DoctorAvailabilityRepository {
         return await DoctorAvailability.findByPk(id);
     }
 
-    async getAvailabilityByDoctorAndDay(
-        doctorId: number,
-        dayOfWeek: string
-    ) {
+    async getAvailabilityByDoctorAndDay(doctorId: number, dayOfWeek: string) {
         return await DoctorAvailability.findAll({
             where: {
                 doctor_id: doctorId,
@@ -28,7 +26,7 @@ export class DoctorAvailabilityRepository {
         });
     }
 
-    async updateAvailability(id: number, data: any) {
+    async updateAvailability(id: number, data: DoctorAvailabilityAttributes) {
         await DoctorAvailability.update(data,
             { where: { id } }
         );
@@ -38,6 +36,15 @@ export class DoctorAvailabilityRepository {
     async deleteAvailability(id: number) {
         return await DoctorAvailability.destroy({
             where: { id }
+        });
+    }
+    
+    async deleteAvailabilityByDoctorAndDay(doctorId: number, dayOfWeek: string) {
+        return await DoctorAvailability.destroy({
+            where: {
+                doctor_id: doctorId,
+                day_of_week: dayOfWeek
+            }
         });
     }
 }

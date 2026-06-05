@@ -2,9 +2,10 @@ import jwt from "jsonwebtoken";
 
 interface JwtPayload {
     id: number;
-    role?: string;
+    role?: "doctor" | "patient" ;
     profile_id?: number | null;
 }
+
 export const generateAccessToken = (user: JwtPayload): string => {
     return jwt.sign(
         { id: user.id, role: user.role, profile_id: user.profile_id },

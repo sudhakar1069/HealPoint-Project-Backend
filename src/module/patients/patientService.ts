@@ -110,7 +110,6 @@ export class PatientService {
             },
             null
         );
-
         return {
             profile_picture: filename
         };

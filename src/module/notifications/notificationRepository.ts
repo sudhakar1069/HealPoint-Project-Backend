@@ -1,9 +1,10 @@
 
-import { Notification } from "../../models/notificationModel.js";
+import { Notification, type NotificationCreationAttributes }
+    from "../../models/notificationModel.js";
 
 export class NotificationRepository {
 
-    async createNotification(data: any) {
+    async createNotification(data: NotificationCreationAttributes) {
         return await Notification.create(data);
     }
 

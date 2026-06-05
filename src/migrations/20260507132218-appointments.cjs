@@ -12,7 +12,6 @@ module.exports = {
       },
       doctor_id: {
         type: Sequelize.INTEGER,
-        unique: true,
         allowNull: false,
         references: {
           model: "doctors",
@@ -23,7 +22,6 @@ module.exports = {
       },
       patient_id: {
         type: Sequelize.INTEGER,
-        unique: true,
         allowNull: false,
         references: {
           model: "patients",
@@ -46,18 +44,51 @@ module.exports = {
         type: Sequelize.TIME,
         allowNull: false,
       },
+      consultation_type: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+
+      reason: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
 
       status: {
         type: Sequelize.ENUM(
-          "pending",
+          "pending_payment",
           "confirmed",
-          "completed",
-          "cancelled"
+          "cancelled",
+          "completed"
         ),
         allowNull: false,
-        defaultValue: "pending",
+        defaultValue: "pending_payment",
       },
-
+      payment_expires_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      meeting_room: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      consultation_status: {
+        type: Sequelize.ENUM(
+          "scheduled",
+          "ongoing",
+          "completed"
+        ),
+        allowNull: false,
+        defaultValue: "scheduled",
+      },
+      consultation_started_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      consultation_ended_at: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -70,17 +101,10 @@ module.exports = {
         defaultValue: Sequelize.NOW,
       },
     });
-
-    await queryInterface.addConstraint("appointments", {
-      fields: ["doctor_id", "appointment_date", "start_time"],
-      type: "unique",
-      name: "unique_doctor_appointment_slot",
-    });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('appointments');
-
   }
 };
 

@@ -4,7 +4,6 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { DoctorAvailabilityRepository } from "./availabilityRepository.js";
 import { DoctorAvailabilityService } from "./availabilityService.js";
 import { DoctorRepository } from "../doctors/doctorRepository.js";
-// import { AppointmentRepository } from "../appointments/appointmentRepository.js";
 
 const availabilityRepository = new DoctorAvailabilityRepository();
 const doctorRepository = new DoctorRepository();
@@ -15,9 +14,9 @@ const availabilityService = new DoctorAvailabilityService(
 );
 
 export const createAvailability = asyncHandler(
-    async (req: any, res: Response) => {
+    async (req: Request, res: Response) => {
 
-        const doctorId = req.user.profile_id;
+        const doctorId = req.user!.profile_id;
         const result = await availabilityService.createAvailability(doctorId, req.body);
         return res.status(201).json({
             success: true,
@@ -50,8 +49,8 @@ export const getAvailabilityById = asyncHandler(
 );
 
 export const updateAvailability = asyncHandler(
-    async (req: any, res: Response) => {
-        const doctorId = req.user.profile_id;
+    async (req: Request, res: Response) => {
+        const doctorId = req.user!.profile_id;
         const availabilityId = Number(req.params.id);
         const result = await availabilityService
             .updateAvailability(doctorId, availabilityId, req.body);
@@ -64,8 +63,8 @@ export const updateAvailability = asyncHandler(
 );
 
 export const deleteAvailability = asyncHandler(
-    async (req: any, res: Response) => {
-        const doctorId = req.user.profile_id;
+    async (req: Request, res: Response) => {
+        const doctorId = req.user!.profile_id;
         const availabilityId = Number(req.params.id);
         await availabilityService.deleteAvailability(doctorId, availabilityId);
         return res.status(200).json({

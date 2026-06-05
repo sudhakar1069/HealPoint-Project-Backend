@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { PatientRepository } from "./patientRepository.js";
 import { PatientService } from "./patientService.js";
-import type { AuthRequest } from "../../utils/authRequest.js";
 import { generateFileUrl } from "../../utils/generateFileUrl.js";
 
 const patientRepository = new PatientRepository();
@@ -31,9 +30,9 @@ export const getAllPatients = asyncHandler(
     }
 );
 export const getMyPatientProfile = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
+    async (req: Request, res: Response) => {
 
-        const userId = req.user.id;
+        const userId = req.user!.id;
         const patient: any = await patientService.getMyPatientProfile(userId);
 
         if (patient.user?.profile_picture) {
@@ -51,8 +50,8 @@ export const getMyPatientProfile = asyncHandler(
     }
 );
 export const updateMyPatientProfile = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
-        const userId = req.user.id;
+    async (req: Request, res: Response) => {
+        const userId = req.user!.id;
         const result = await patientService.updateMyPatientProfile(
             userId,
             req.body
@@ -66,8 +65,8 @@ export const updateMyPatientProfile = asyncHandler(
     }
 );
 export const updateMyPatientPhoto = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
-        const userId = req.user.id;
+    async (req: Request, res: Response) => {
+        const userId = req.user!.id;
         if (!req.file) {
             return res.status(400).json({
                 success: false,
@@ -123,10 +122,10 @@ export const updatePatient = asyncHandler(async (req: Request, res: Response) =>
     });
 });
 
-export const updatePatientPhoto = asyncHandler(async (req: AuthRequest, res: Response) => {
+export const updatePatientPhoto = asyncHandler(async (req: Request, res: Response) => {
 
     const patientId = Number(req.params.id);
-    const loggedInUserId = req.user.id;
+    const loggedInUserId = req.user!.id;
     if (!req.file) {
         return res.status(400).json({
             success: false,

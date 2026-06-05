@@ -1,17 +1,13 @@
 import { Op } from "sequelize";
-import Specialization from "../../models/departmentModel.js";
+import Specialization from "../../models/specializationModel.js";
 import Doctor from "../../models/doctorModel.js";
-
+import type { CreateSpecializationDTO, UpdateSpecializationDTO } from "../../types/specializationDto.js";
 export class SpecializationRepository {
-    async create(data: any) {
+    async create(data: CreateSpecializationDTO) {
         return await Specialization.create(data);
     }
 
-    async findAll(
-        page: number,
-        limit: number,
-        search: string
-    ) {
+    async findAll(page: number, limit: number, search: string) {
         const offset = (page - 1) * limit;
         const whereCondition: any = {};
         if (search) {
@@ -70,7 +66,7 @@ export class SpecializationRepository {
         });
     }
 
-    async update(id: number, data: any) {
+    async update(id: number, data: UpdateSpecializationDTO) {
         await Specialization.update(data, {
             where: { id },
         });

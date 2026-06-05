@@ -2,7 +2,7 @@ export interface CreateDoctorDTO {
     name: string;
     phone_number: string;
     email: string;
-    gender: "male" | "female" | "others";
+    gender: "Male" | "Female" | "Others";
     password: string;
     specialization: string;
     education:string;

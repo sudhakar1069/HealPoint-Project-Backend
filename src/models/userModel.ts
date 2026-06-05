@@ -1,7 +1,6 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 
 import { sequelize } from "../config/db.js";
-import { tr } from "zod/locales";
 
 
 export interface userAttributes {
@@ -16,7 +15,7 @@ export interface userAttributes {
     refresh_token: string | null
 }
 export interface userCreationAttributes
-    extends Optional<userAttributes, "id"> { }
+    extends Optional<userAttributes, "id"| "refresh_token"|"profile_picture"> { }
 
 export class User extends Model<userAttributes, userCreationAttributes>
     implements userAttributes {

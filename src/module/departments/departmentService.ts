@@ -1,9 +1,11 @@
 import { SpecializationRepository } from "./departmentRepository.js";
+import type { CreateSpecializationDTO, UpdateSpecializationDTO }
+    from "../../types/specializationDto.js";
 
 export class SpecializationService {
     constructor(private specializationRepository: SpecializationRepository) { }
-    
-    async createSpecialization(data:any) {
+
+    async createSpecialization(data: CreateSpecializationDTO) {
         const existing = await this.specializationRepository.findByName(data.name);
         if (existing) {
             throw new Error("Specialization already exists");
@@ -16,11 +18,7 @@ export class SpecializationService {
         limit: number,
         search: string
     ) {
-        return await this.specializationRepository.findAll(
-            page,
-            limit,
-            search
-        );
+        return await this.specializationRepository.findAll(page, limit, search);
     }
 
     async getSpecializationById(id: number) {
@@ -31,7 +29,7 @@ export class SpecializationService {
         return specialization;
     }
 
-    async updateSpecialization(id: number, data: any) {
+    async updateSpecialization(id: number, data: UpdateSpecializationDTO) {
         const specialization = await this.specializationRepository.findById(id);
         if (!specialization) {
             throw new Error("Specialization not found");
@@ -46,7 +44,7 @@ export class SpecializationService {
     }
 
     async deleteSpecialization(id: number) {
-     const specialization = await this.specializationRepository.findById(id);
+        const specialization = await this.specializationRepository.findById(id);
         if (!specialization) {
             throw new Error("Specialization not found");
         }

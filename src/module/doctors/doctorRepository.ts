@@ -1,18 +1,22 @@
 import { Op } from "sequelize";
 import Doctor from "../../models/doctorModel.js";
 import { User } from "../../models/userModel.js";
-
+import type { DoctorCreationAttributes } from "../../models/doctorModel.js"
+import type { userCreationAttributes } from "../../models/userModel.js";
 
 export class DoctorRepository {
-    async createUser(data: any, transaction: any) {
+    async createUser(data: userCreationAttributes, transaction: any) {
         return await User.create(data, { transaction });
     }
-    async createDoctor(data: any, transaction: any) {
+
+    async createDoctor(data: DoctorCreationAttributes, transaction: any) {
         return await Doctor.create(data, { transaction });
     }
+
     async findUserByEmail(email: string) {
         return await User.findOne({ where: { email } });
     }
+
     async getAllDoctors(page: number, limit: number, filters: any) {
         const offset = (page - 1) * limit;
 
@@ -56,9 +60,7 @@ export class DoctorRepository {
 
         if (filters.search?.trim()) {
             const searchTerm = `%${filters.search.trim()}%`;
-            userWhere.name = {
-                [Op.like]: searchTerm
-            };
+            userWhere.name = { [Op.like]: searchTerm };
 
         }
         return await Doctor.findAndCountAll({
@@ -82,6 +84,7 @@ export class DoctorRepository {
             order: [["created_at", "DESC"]]
         });
     }
+
     async getDoctorById(id: number) {
         return await Doctor.findByPk(id, {
             include: {
@@ -98,6 +101,7 @@ export class DoctorRepository {
             }
         });
     }
+
     async getDoctorByUserId(userId: number) {
         return await Doctor.findOne({
             where: { user_id: userId },
@@ -116,16 +120,15 @@ export class DoctorRepository {
         });
     }
 
-    async updateUser(userId: number, data: any, transaction: any = null) {
+    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: any = null) {
         return await User.update(data,
             {
-                where: { id: userId },
-                transaction
+                where: { id: userId }, transaction
             }
         );
     }
 
-    async updateDoctor(doctorId: number, data: any, transaction: any) {
+    async updateDoctor(doctorId: number, data: Partial<DoctorCreationAttributes>, transaction: any) {
         return await Doctor.update(data,
             { where: { id: doctorId }, transaction }
         );
@@ -138,8 +141,7 @@ export class DoctorRepository {
     }
     async deleteUser(userId: number, transaction: any) {
         return await User.destroy({
-            where: { id: userId },
-            transaction
+            where: { id: userId }, transaction
         });
     }
 }

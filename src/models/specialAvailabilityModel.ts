@@ -1,6 +1,6 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
-interface SpecialAvailabilityAttributes {
+export interface SpecialAvailabilityAttributes {
     id?: number;
     doctor_id: number;
     date: string;
@@ -11,7 +11,7 @@ interface SpecialAvailabilityAttributes {
     notes?: string | null;
 }
 
-interface SpecialAvailabilityCreationAttributes
+export interface SpecialAvailabilityCreationAttributes
     extends Optional<
         SpecialAvailabilityAttributes,
         "id" | "is_available" | "notes"

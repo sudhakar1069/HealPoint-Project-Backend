@@ -1,8 +1,9 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 
 import { sequelize } from "../config/db.js";
+import type Doctor from "./doctorModel.js";
 
-interface DoctorAvailabilityAttributes {
+export interface DoctorAvailabilityAttributes {
     id?: number;
     doctor_id: number;
     day_of_week: string;
@@ -11,10 +12,11 @@ interface DoctorAvailabilityAttributes {
     slot_duration: number;
     break_start?: number|null;
     break_end?: number|null;
-    is_active?: number;
+    is_active?: boolean;
+    
 }
 
-interface DoctorAvailabilityCreationAttributes
+export interface DoctorAvailabilityCreationAttributes
     extends Optional<DoctorAvailabilityAttributes, "id"|"break_start"|"break_end"|"is_active"> { }
 
 class DoctorAvailability extends Model<
@@ -30,7 +32,8 @@ class DoctorAvailability extends Model<
     declare slot_duration: number;
     declare break_start: number;
     declare break_end: number;
-    declare is_active: number;
+    declare is_active: boolean;
+    declare doctor: Doctor;
 }
 
 DoctorAvailability.init(

@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
-import type { Response, NextFunction } from "express";
-import type { AuthRequest } from "../utils/authRequest.js";
+import type { Request, Response, NextFunction } from "express";
 
 export const authenticate = (
-    req: AuthRequest,
+    req: Request,
     res: Response,
     next: NextFunction
 ) => {

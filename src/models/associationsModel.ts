@@ -1,9 +1,11 @@
 import { User } from "./userModel.js";
 import Doctor from "./doctorModel.js";
 import DoctorAvailability from "./availabilityModel.js";
-import DoctorUnAvailability from "./availabilityModel.js";
 import Patient from "./patientModel.js";
 import DoctorUnavailability from "./unavailabilityModel.js";
+import SpecialAvailability from "./specialAvailabilityModel.js";
+import Appointment from "./appointmentModel.js";
+import Payment from "./paymentModel.js";
 
 User.hasOne(Doctor, {
     foreignKey: "user_id",
@@ -40,7 +42,45 @@ DoctorUnavailability.belongsTo(Doctor, {
     as: "doctor",
 });
 
-Doctor.hasMany(DoctorUnAvailability, {
+Doctor.hasMany(DoctorUnavailability, {
     foreignKey: "doctor_id",
     as: "unavailabilities",
+});
+
+SpecialAvailability.belongsTo(Doctor, {
+    foreignKey: "doctor_id",
+    as: "doctor",
+});
+
+Doctor.hasMany(SpecialAvailability, {
+    foreignKey: "doctor_id",
+    as: "specialAvailabilities",
+});
+Appointment.hasOne(Payment, {
+    foreignKey: "appointment_id",
+    as: "payment",
+});
+
+Payment.belongsTo(Appointment, {
+    foreignKey: "appointment_id",
+    as: "appointment",
+});
+Appointment.belongsTo(Doctor, {
+    foreignKey: "doctor_id",
+    as: "doctor",
+});
+
+Doctor.hasMany(Appointment, {
+    foreignKey: "doctor_id",
+    as: "appointments",
+});
+
+Appointment.belongsTo(Patient, {
+    foreignKey: "patient_id",
+    as: "patient",
+});
+
+Patient.hasMany(Appointment, {
+    foreignKey: "patient_id",
+    as: "appointments",
 });
