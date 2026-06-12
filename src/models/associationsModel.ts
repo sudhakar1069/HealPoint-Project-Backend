@@ -1,4 +1,4 @@
-import { User } from "./userModel.js";
+import User from "./userModel.js";
 import Doctor from "./doctorModel.js";
 import DoctorAvailability from "./availabilityModel.js";
 import Patient from "./patientModel.js";
@@ -6,6 +6,7 @@ import DoctorUnavailability from "./unavailabilityModel.js";
 import SpecialAvailability from "./specialAvailabilityModel.js";
 import Appointment from "./appointmentModel.js";
 import Payment from "./paymentModel.js";
+import Review from "./reviewModel.js";
 
 User.hasOne(Doctor, {
     foreignKey: "user_id",
@@ -83,4 +84,34 @@ Appointment.belongsTo(Patient, {
 Patient.hasMany(Appointment, {
     foreignKey: "patient_id",
     as: "appointments",
+});
+
+Appointment.hasOne(Review, {
+    foreignKey: "appointment_id",
+    as: "review"
+});
+
+Review.belongsTo(Appointment, {
+    foreignKey: "appointment_id",
+    as: "appointment"
+});
+
+Doctor.hasMany(Review, {
+    foreignKey: "doctor_id",
+    as: "review"
+});
+
+Review.belongsTo(Doctor, {
+    foreignKey: "doctor_id",
+    as: "doctor"
+});
+
+Patient.hasMany(Review, {
+    foreignKey: "patient_id",
+    as: "review"
+});
+
+Review.belongsTo(Patient, {
+    foreignKey: "patient_id",
+    as: "patient"
 });

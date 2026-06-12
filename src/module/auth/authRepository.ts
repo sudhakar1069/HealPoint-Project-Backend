@@ -1,6 +1,7 @@
 import Patient, { type PatientCreationAttributes } from "../../models/patientModel.js";
 import Doctor from "../../models/doctorModel.js";
 import { User, type userCreationAttributes } from "../../models/userModel.js";
+import { Op } from "sequelize";
 
 export class UserRepository {
     async create(user: userCreationAttributes) {
@@ -46,6 +47,29 @@ export class UserRepository {
     async findPatientByUserId(userId: number) {
         return await Patient.findOne({
             where: { user_id: userId }
+        });
+    }
+
+    async saveResetOtp(userId: number, otp: string, expires: Date) {
+        return await User.update(
+            {
+                reset_password_otp: otp,
+                reset_password_expires: expires,
+                otp_verified: false
+            },
+            { where: { id: userId } }
+        );
+    }
+
+    async findByEmailAndOtp(email: string, otp: string) {
+        return await User.findOne({
+            where: {
+                email,
+                reset_password_otp: otp,
+                reset_password_expires: {
+                    [Op.gt]: new Date()
+                }
+            }
         });
     }
 }

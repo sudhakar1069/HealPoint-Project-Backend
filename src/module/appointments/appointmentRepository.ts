@@ -3,6 +3,7 @@ import Appointment from "../../models/appointmentModel.js";
 import Doctor from "../../models/doctorModel.js";
 import Patient from "../../models/patientModel.js";
 import { User } from "../../models/userModel.js";
+import Payment from "../../models/paymentModel.js";
 import type { AppointmentStatus } from "../../types/appointmentStatus.js";
 
 export class AppointmentRepository {
@@ -18,6 +19,8 @@ export class AppointmentRepository {
         page: number = 1,
         limit: number = 10,
         patientName?: string,
+        doctorName?: string,
+        consultationStatus?: string,
         month?: number,
         year?: number
     ) {
@@ -25,10 +28,24 @@ export class AppointmentRepository {
         const patientUserWhere: any = {};
 
         if (patientName) {
-            patientUserWhere.name = { [Op.like]: `%${patientName}%` };
+            patientUserWhere.name = {
+                [Op.like]: `%${patientName}%`
+            };
+        }
+
+        const doctorUserWhere: any = {};
+
+        if (doctorName) {
+            doctorUserWhere.name = {
+                [Op.like]: `%${doctorName}%`
+            };
         }
 
         const appointmentWhere: any = {};
+
+        if (consultationStatus) {
+            appointmentWhere.status = consultationStatus;
+        }
 
         if (month && year) {
             appointmentWhere.appointment_date = {
@@ -46,6 +63,7 @@ export class AppointmentRepository {
             };
         } else if (month) {
             const currentYear = new Date().getFullYear();
+
             appointmentWhere.appointment_date = {
                 [Op.between]: [
                     new Date(currentYear, month - 1, 1),
@@ -58,6 +76,11 @@ export class AppointmentRepository {
             where: appointmentWhere,
             include: [
                 {
+                    model: Payment,
+                    as: "payment",
+                    required: false
+                },
+                {
                     model: Doctor,
                     as: "doctor",
                     attributes: [
@@ -66,6 +89,7 @@ export class AppointmentRepository {
                         "consultation_fee",
                         "experience_years"
                     ],
+                    required: !!doctorName,
                     include: [
                         {
                             model: User,
@@ -75,7 +99,11 @@ export class AppointmentRepository {
                                 "name",
                                 "email",
                                 "profile_picture"
-                            ]
+                            ],
+                            required: !!doctorName,
+                            where: doctorName
+                                ? doctorUserWhere
+                                : undefined
                         }
                     ]
                 },
@@ -83,6 +111,7 @@ export class AppointmentRepository {
                     model: Patient,
                     as: "patient",
                     attributes: ["id"],
+                    required: !!patientName,
                     include: [
                         {
                             model: User,
@@ -93,7 +122,10 @@ export class AppointmentRepository {
                                 "email",
                                 "gender"
                             ],
-                            where: patientName ? patientUserWhere : undefined
+                            required: !!patientName,
+                            where: patientName
+                                ? patientUserWhere
+                                : undefined
                         }
                     ]
                 }
@@ -104,7 +136,7 @@ export class AppointmentRepository {
             ],
             limit,
             offset,
-            distinct: true
+            distinct: true,
         });
     }
 
@@ -114,7 +146,8 @@ export class AppointmentRepository {
         limit: number = 10,
         patientName?: string,
         month?: number,
-        year?: number
+        year?: number,
+        consultationFilter?: string
     ) {
         const offset = (page - 1) * limit;
         const patientUserWhere: any = {};
@@ -122,7 +155,30 @@ export class AppointmentRepository {
         if (patientName) {
             patientUserWhere.name = { [Op.like]: `%${patientName}%` };
         }
+
         const appointmentWhere: any = { doctor_id: doctorId };
+
+        if (consultationFilter) {
+            switch (consultationFilter) {
+                case "upcoming":
+                    appointmentWhere.status = "confirmed";
+                    appointmentWhere.consultation_status = "scheduled";
+                    break;
+
+                case "completed":
+                    appointmentWhere.consultation_status = "completed";
+                    break;
+
+                case "missed":
+                    appointmentWhere.consultation_status = "missed";
+                    break;
+
+                case "cancelled":
+                    appointmentWhere.status = "cancelled";
+                    break;
+            }
+        }
+
         if (month && year) {
             appointmentWhere.appointment_date = {
                 [Op.between]: [
@@ -139,6 +195,7 @@ export class AppointmentRepository {
             };
         } else if (month) {
             const currentYear = new Date().getFullYear();
+
             appointmentWhere.appointment_date = {
                 [Op.between]: [
                     new Date(currentYear, month - 1, 1),
@@ -164,7 +221,9 @@ export class AppointmentRepository {
                                 "email",
                                 "gender"
                             ],
-                            where: patientName ? patientUserWhere : undefined
+                            where: patientName
+                                ? patientUserWhere
+                                : undefined
                         }
                     ]
                 }
@@ -185,14 +244,38 @@ export class AppointmentRepository {
         limit = 10,
         doctorName?: string,
         month?: number,
-        year?: number
+        year?: number,
+        consultationFilter?: string
     ) {
         const offset = (page - 1) * limit;
         const doctorUserWhere: any = {};
+
         if (doctorName) {
             doctorUserWhere.name = { [Op.like]: `%${doctorName}%` };
         }
         const appointmentWhere: any = { patient_id: patientId };
+
+        if (consultationFilter) {
+            switch (consultationFilter) {
+                case "upcoming":
+                    appointmentWhere.status = "confirmed";
+                    appointmentWhere.consultation_status = "scheduled";
+                    break;
+
+                case "completed":
+                    appointmentWhere.consultation_status = "completed";
+                    break;
+
+                case "missed":
+                    appointmentWhere.consultation_status = "missed";
+                    break;
+
+                case "cancelled":
+                    appointmentWhere.status = "cancelled";
+                    break;
+            }
+        }
+
         if (month && year) {
             appointmentWhere.appointment_date = {
                 [Op.between]: [
@@ -209,6 +292,7 @@ export class AppointmentRepository {
             };
         } else if (month) {
             const currentYear = new Date().getFullYear();
+
             appointmentWhere.appointment_date = {
                 [Op.between]: [
                     new Date(currentYear, month - 1, 1),
@@ -239,7 +323,9 @@ export class AppointmentRepository {
                                 "email",
                                 "profile_picture"
                             ],
-                            where: doctorName ? doctorUserWhere : undefined
+                            where: doctorName
+                                ? doctorUserWhere
+                                : undefined
                         }
                     ]
                 }
@@ -264,7 +350,11 @@ export class AppointmentRepository {
                         {
                             model: User,
                             as: "user",
-                            attributes: ["id", "name", "email"]
+                            attributes: [
+                                "id",
+                                "name",
+                                "email"
+                            ]
                         }
                     ]
                 },
@@ -275,7 +365,11 @@ export class AppointmentRepository {
                         {
                             model: User,
                             as: "user",
-                            attributes: ["id", "name", "email"]
+                            attributes: [
+                                "id",
+                                "name",
+                                "email"
+                            ]
                         }
                     ]
                 }
@@ -283,14 +377,20 @@ export class AppointmentRepository {
         });
     }
 
-    async updateAppointmentStatus(appointmentId: number, status: AppointmentStatus) {
+    async updateAppointmentStatus(
+        appointmentId: number,
+        status: AppointmentStatus
+    ) {
         return await Appointment.update(
             { status },
             { where: { id: appointmentId } }
         );
     }
 
-    async updateMeetingDetails(appointmentId: number, meetingRoom: string) {
+    async updateMeetingDetails(
+        appointmentId: number,
+        meetingRoom: string
+    ) {
         return await Appointment.update(
             {
                 meeting_room: meetingRoom,
@@ -327,7 +427,9 @@ export class AppointmentRepository {
         return await Appointment.findAll({
             where: {
                 status: "pending_payment",
-                payment_expires_at: { [Op.lte]: new Date() }
+                payment_expires_at: {
+                    [Op.lte]: new Date()
+                }
             }
         });
     }
@@ -369,5 +471,28 @@ export class AppointmentRepository {
                 where: { id: appointmentId }
             }
         );
+    }
+
+    async markMissedConsultations() {
+        const now = new Date();
+
+        const appointments = await Appointment.findAll({
+            where: {
+                status: "confirmed",
+                consultation_status: "scheduled"
+            }
+        });
+
+        for (const appointment of appointments) {
+            const appointmentEnd = new Date(
+                `${appointment.appointment_date}T${appointment.end_time}`
+            );
+
+            if (appointmentEnd < now) {
+                await appointment.update({
+                    consultation_status: "missed"
+                });
+            }
+        }
     }
 }

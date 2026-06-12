@@ -45,7 +45,7 @@ export class SlotService {
     private isPastSlot(
         date: string,
         slotStartTime: string,
-        bufferMinutes = 10
+        bufferMinutes = 5
     ): boolean {
         const now = new Date();
 

@@ -1,15 +1,18 @@
 import { Router } from "express";
 const router = Router();
-import { createDoctor, getAllDoctors, getDoctorById, updateDoctor, updateDoctorPhoto, getMyDoctorProfile, deleteDoctor } from "./doctorController.js";
+import {
+    createDoctor, getAllDoctors, getDoctorById, updateDoctor,
+    updateDoctorPhoto, getMyDoctorProfile, deleteDoctor
+} from "./doctorController.js";
 import { authorize } from "../../middleware/authorize.js";
 import { authenticate } from "../../middleware/authenticate.js";
 import { OwnerShip } from "../../middleware/owner.js";
 import { upload } from "../../middleware/profile.js";
 router.post("/doctors", authenticate, authorize("admin"), upload.single("profile_picture"), createDoctor);
-router.get("/doctors", authenticate, authorize("admin", "doctor", "patient"), getAllDoctors);
+router.get("/doctors", getAllDoctors);
 router.get("/doctors/me", authenticate, authorize("doctor"), getMyDoctorProfile);
-router.get("/doctors/:id", authenticate, authorize("admin", "doctor","patient"), getDoctorById);
-router.put("/doctors/:id/photo", authenticate, authorize("doctor", "admin"),upload.single("profile_picture"), updateDoctorPhoto);
+router.get("/doctors/:id", getDoctorById);
+router.put("/doctors/:id/photo", authenticate, authorize("doctor", "admin"), upload.single("profile_picture"), updateDoctorPhoto);
 router.put("/doctors/:id", authenticate, authorize("admin", "doctor"), OwnerShip, upload.none(), updateDoctor);
 router.delete("/doctors/:id", authenticate, authorize("admin"), deleteDoctor);
 export default router;

@@ -76,7 +76,8 @@ module.exports = {
         type: Sequelize.ENUM(
           "scheduled",
           "ongoing",
-          "completed"
+          "completed",
+          "missed"
         ),
         allowNull: false,
         defaultValue: "scheduled",
@@ -88,6 +89,10 @@ module.exports = {
       consultation_ended_at: {
         type: Sequelize.DATE,
         allowNull: true,
+      },
+      review_given: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       created_at: {
         type: Sequelize.DATE,

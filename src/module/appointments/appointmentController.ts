@@ -6,12 +6,15 @@ import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { PatientRepository } from "../patients/patientRepository.js";
 import { SlotRepository } from "../slots/slotRepository.js";
 import { SlotService } from "../slots/slotService.js";
-
+import { PaymentRepository } from "../payment/paymentRepository.js";
+import { ReviewRepository } from "../reviews/reviewRepository.js";
 
 const appointmentRepository = new AppointmentRepository();
 const doctorRepository = new DoctorRepository();
 const patientRepository = new PatientRepository();
 const slotRepository = new SlotRepository();
+const paymentRepository = new PaymentRepository();
+const reviewRepository = new ReviewRepository();
 
 const slotService = new SlotService(
     slotRepository,
@@ -22,25 +25,29 @@ const appointmentService = new AppointmentService(
     appointmentRepository,
     doctorRepository,
     patientRepository,
-    slotService
+    slotService,
+    paymentRepository,
+    reviewRepository
 );
 
 export const bookAppointment = asyncHandler(async (req: any, res: Response) => {
     const patientId = req.user.profile_id;
     const result = await appointmentService.bookAppointment(patientId, req.body);
+
     return res.status(201).json({
         success: true,
         message: "Appointment booked successfully",
         data: result
     });
-}
-);
+});
+
 export const getAllAppointments = asyncHandler(
     async (req: Request, res: Response) => {
-
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const patientName = req.query.patientName as string;
+        const doctorName = req.query.doctorName as string;
+        const consultationStatus = req.query.consultationStatus as string;
 
         const month = req.query.month
             ? Number(req.query.month)
@@ -54,6 +61,8 @@ export const getAllAppointments = asyncHandler(
             page,
             limit,
             patientName,
+            doctorName,
+            consultationStatus,
             month,
             year
         );
@@ -64,12 +73,14 @@ export const getAllAppointments = asyncHandler(
         });
     }
 );
+
 export const getDoctorAppointments = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorUserId = req.user!.id;
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const patientName = req.query.patientName as string;
+        const consultationFilter = req.query.consultationFilter as string;
 
         const month = req.query.month
             ? Number(req.query.month)
@@ -85,7 +96,8 @@ export const getDoctorAppointments = asyncHandler(
             limit,
             patientName,
             month,
-            year
+            year,
+            consultationFilter
         );
 
         res.status(200).json({
@@ -94,6 +106,7 @@ export const getDoctorAppointments = asyncHandler(
         });
     }
 );
+
 export const getPatientAppointments = asyncHandler(
     async (req: Request, res: Response) => {
         const patientUserId = req.user!.id;
@@ -101,6 +114,7 @@ export const getPatientAppointments = asyncHandler(
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const doctorName = req.query.doctorName as string;
+        const consultationFilter = req.query.consultationFilter as string;
 
         const month = req.query.month
             ? Number(req.query.month)
@@ -110,15 +124,15 @@ export const getPatientAppointments = asyncHandler(
             ? Number(req.query.year)
             : undefined;
 
-        const result =
-            await appointmentService.getPatientAppointments(
-                patientUserId,
-                page,
-                limit,
-                doctorName,
-                month,
-                year
-            );
+        const result = await appointmentService.getPatientAppointments(
+            patientUserId,
+            page,
+            limit,
+            doctorName,
+            month,
+            year,
+            consultationFilter
+        );
 
         res.status(200).json({
             success: true,
@@ -127,43 +141,48 @@ export const getPatientAppointments = asyncHandler(
     }
 );
 
-export const getAppointmentById = asyncHandler(async (req: Request, res: Response) => {
+export const getAppointmentById = asyncHandler(
+    async (req: Request, res: Response) => {
+        const appointment = await appointmentService
+            .getAppointmentDetails(Number(req.params.id));
 
-    const appointment = await appointmentService
-        .getAppointmentDetails(Number(req.params.id));
-
-    return res.status(200).json({
-        success: true,
-        appointment,
-    });
-});
-
-export const joinConsultation = asyncHandler(async (req: Request, res: Response) => {
-
-    if (!req.user) {
-        throw new Error("Unauthorized");
+        return res.status(200).json({
+            success: true,
+            appointment
+        });
     }
+);
 
-    const appointmentId = Number(req.params.id);
-    const profileId = req.user.profile_id;
-    const role = req.user.role;
+export const joinConsultation = asyncHandler(
+    async (req: Request, res: Response) => {
+        if (!req.user) {
+            throw new Error("Unauthorized");
+        }
 
-    const result = await appointmentService
-        .joinConsultation(appointmentId, profileId, role);
+        const appointmentId = Number(req.params.id);
+        const profileId = req.user.profile_id;
+        const role = req.user.role;
 
-    res.status(200).json({
-        success: true,
-        data: result
-    });
-}
+        const result = await appointmentService.joinConsultation(
+            appointmentId,
+            profileId,
+            role
+        );
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }
 );
 
 export const startConsultation = asyncHandler(
     async (req: Request, res: Response) => {
-
         const appointmentId = Number(req.params.id);
         const result = await appointmentService.startConsultation(
-            appointmentId, req.user!.profile_id);
+            appointmentId,
+            req.user!.profile_id
+        );
 
         res.status(200).json({
             success: true,
@@ -174,11 +193,31 @@ export const startConsultation = asyncHandler(
 
 export const completeConsultation = asyncHandler(
     async (req: Request, res: Response) => {
-
         const appointmentId = Number(req.params.id);
         const doctorId = req.user!.profile_id;
-        const result = await appointmentService
-            .completeConsultation(appointmentId, doctorId);
+
+        const result = await appointmentService.completeConsultation(
+            appointmentId,
+            doctorId
+        );
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }
+);
+
+export const cancelAppointment = asyncHandler(
+    async (req: Request, res: Response) => {
+        const appointmentId = Number(req.params.id);
+        const profileId = req.user!.profile_id;
+        const role = req.user!.role;
+        const result = await appointmentService.cancelAppointment(
+            appointmentId,
+            profileId,
+            role
+        );
 
         res.status(200).json({
             success: true,

@@ -30,7 +30,23 @@ export const getEarningsSummary = asyncHandler(
 export const getPaymentHistory = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorId = req.user!.profile_id;
-        const result = await earningsService.getPaymentHistory(doctorId);
+
+        const page = req.query.page
+            ? Number(req.query.page)
+            : 1;
+
+        const limit = req.query.limit
+            ? Number(req.query.limit)
+            : 10;
+
+        const date = req.query.date as string | undefined;
+
+        const result = await earningsService.getPaymentHistory(
+            doctorId,
+            page,
+            limit,
+            date
+        );
 
         return res.status(200).json({
             success: true,

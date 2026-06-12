@@ -1,5 +1,4 @@
 import { DataTypes, Model, type Optional } from "sequelize";
-
 import { sequelize } from "../config/db.js";
 
 
@@ -8,28 +7,43 @@ export interface userAttributes {
     name: string,
     phone_number: string,
     email: string,
-    profile_picture?: string|null;
+    profile_picture?: string | null;
     role: "admin" | "doctor" | "patient",
     password: string,
     gender: "Male" | "Female" | "Others"
     refresh_token: string | null
+    reset_password_otp?: string | null
+    reset_password_expires?: Date | null
+    otp_verified?: boolean
 }
+
 export interface userCreationAttributes
-    extends Optional<userAttributes, "id"| "refresh_token"|"profile_picture"> { }
+    extends Optional<
+        userAttributes,
+        | "id"
+        | "refresh_token"
+        | "profile_picture"
+        | "reset_password_otp"
+        | "reset_password_expires"
+        | "otp_verified"
+    > { }
 
 export class User extends Model<userAttributes, userCreationAttributes>
     implements userAttributes {
+
     declare id: number;
     declare name: string;
     declare phone_number: string;
     declare email: string;
-    declare profile_picture?: string|null;
+    declare profile_picture?: string | null;
     declare dob: string;
     declare gender: "Male" | "Female" | "Others";
     declare role: "admin" | "doctor" | "patient";
     declare password: string;
     declare refresh_token: string | null;
-
+    declare reset_password_otp: string | null;
+    declare reset_password_expires: Date | null;
+    declare otp_verified?: boolean;
 }
 User.init({
     id: {
@@ -56,7 +70,7 @@ User.init({
     },
     profile_picture: {
         type: DataTypes.STRING,
-        allowNull:true
+        allowNull: true
     },
     role: {
         type: DataTypes.ENUM("admin", "doctor", "patient"),
@@ -69,7 +83,21 @@ User.init({
     refresh_token: {
         type: DataTypes.TEXT,
         allowNull: true
-    }
+    },
+    reset_password_otp: {
+        type: DataTypes.STRING(6),
+        allowNull: true
+    },
+
+    reset_password_expires: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    otp_verified: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
 }, {
     sequelize,
     tableName: "users",
@@ -77,3 +105,5 @@ User.init({
     createdAt: "created_at",
     updatedAt: "updated_at",
 })
+
+export default User;

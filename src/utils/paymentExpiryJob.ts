@@ -15,7 +15,7 @@ export const startPaymentExpiryJob = () => {
     cron.schedule("* * * * *", async () => {
         try {
             await paymentService.expirePendingPayments();
-            console.log("[PAYMENT EXPIRY JOB] checked");
+            // console.log("[PAYMENT EXPIRY JOB] checked");
         } catch (error) {
             console.error("[PAYMENT EXPIRY JOB ERROR]", error);
         }

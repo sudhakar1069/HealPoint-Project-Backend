@@ -10,50 +10,55 @@ HealPoint enables patients to book appointments with doctors, manage availabilit
 
 ### Authentication & Authorization
 - ✅ JWT-based authentication
-- ✅ Access token & refresh token flow
-- ✅ Role-based access control (Admin, Doctor, Patient)
+- ✅ Token refresh and logout
+- ✅ Role-based access control (admin, doctor, patient)
+- ✅ Password reset flow with OTP verification
 
 ### Doctor Management
 - ✅ Create and manage doctor profiles
 - ✅ Upload doctor profile photos
-- ✅ Assign departments/specializations
-- ✅ Manage doctor availability
+- ✅ Assign departments / specializations
+- ✅ Doctor profile and image updates
 
 ### Patient Management
 - ✅ Patient profile management
 - ✅ Profile image uploads
 - ✅ Appointment history tracking
+- ✅ Patient profile updates and ownership checks
 
 ### Appointment Scheduling
-- ✅ Dynamic slot generation
 - ✅ Appointment booking system
 - ✅ Appointment status tracking
 - ✅ Consultation lifecycle management
+- ✅ Consultation expiry job support
 
 ### Availability Management
 - ✅ Weekly availability schedules
-- ✅ Special availability options
+- ✅ Special availability slots
 - ✅ Unavailability scheduling
-- ✅ Dynamic slot calculation
+- ✅ Dynamic slot generation
 
 ### Payment Processing
 - ✅ Razorpay integration
-- ✅ Order creation & verification
-- ✅ Payment tracking & history
+- ✅ Order creation and verification
+- ✅ Payment record retrieval
+- ✅ Payment expiry job support
 
 ### Notifications
-- ✅ Doctor notifications
-- ✅ Department notifications
-- ✅ Read/unread tracking
+- ✅ Doctor and department notifications
+- ✅ Read / unread tracking
 
 ### Earnings Management
-- ✅ Earnings summary dashboard
+- ✅ Earnings summary endpoints
 - ✅ Monthly earnings reports
-- ✅ Payment history
+- ✅ Payment history retrieval
 
-### Online Consultation
-- ✅ Consultation join endpoint
-- ✅ Appointment start/completion tracking
+### Reviews
+- ✅ Add reviews for doctors
+- ✅ Retrieve doctor reviews
+
+### Dashboard
+- ✅ Analytics endpoints for doctors and admin dashboards
 ---
 
 ## 🛠️ Tech Stack
@@ -70,6 +75,8 @@ HealPoint enables patients to book appointments with doctors, manage availabilit
 | **File Uploads** | Multer |
 | **Payments** | Razorpay |
 | **Environment** | dotenv |
+| **Logging** | Winston |
+| **Job Scheduler** | node-cron |
 ---
 
 ## 🏗️ Project Architecture
@@ -103,15 +110,17 @@ Database (Persistence)
 ```
 src/
 ├── config/                           # Configuration files
-│   ├── db.ts                        # Database connection
-│   └── config.json                  # Environment config
+│   ├── db.ts                        # Database connection via Sequelize
+│   ├── logger.ts                    # Logger setup
+│   └── razorpay.ts                  # Razorpay client setup
 │
 ├── middleware/                       # Express middleware
 │   ├── authenticate.ts              # JWT authentication
 │   ├── authorize.ts                 # Role-based authorization
 │   ├── validator.ts                 # Request validation
 │   ├── errorHandler.ts              # Global error handling
-│   └── ...
+│   ├── rateLimiter.ts               # API rate limiting
+│   └── ...                          # Additional middleware
 │
 ├── models/                           # Sequelize models
 │   ├── userModel.ts
@@ -119,32 +128,30 @@ src/
 │   ├── patientModel.ts
 │   ├── appointmentModel.ts
 │   ├── associationsModel.ts         # Model relationships
-│   └── ...
+│   └── ...                          # Other models
 │
 ├── module/                           # Feature modules
-│   ├── auth/
-│   │   ├── authController.ts
-│   │   ├── authService.ts
-│   │   ├── authRepository.ts
-│   │   └── authRoutes.ts
-│   ├── doctors/
-│   ├── patients/
-│   ├── departments/
-│   ├── availability/
-│   ├── unavailability/
-│   ├── specialAvailability/
-│   ├── slots/
-│   ├── appointments/
-│   ├── payments/
-│   ├── notifications/
-│   └── earnings/
+│   ├── auth/                         # Auth routes, services, repository
+│   ├── doctors/                      # Doctor management
+│   ├── patients/                     # Patient management
+│   ├── departments/                  # Department and specialization management
+│   ├── availability/                 # Weekly availability
+│   ├── unavailability/               # Doctor unavailability
+│   ├── specialAvailabilty/           # Special availability schedules
+│   ├── slots/                        # Slot lookup and generation
+│   ├── appointments/                 # Appointment booking and management
+│   ├── payment/                      # Payment orders and verification
+│   ├── notifications/                # Notification creation and retrieval
+│   ├── earnings/                     # Earnings and payment history
+│   ├── reviews/                      # Doctor reviews
+│   └── dashboard/                    # Dashboard analytics endpoints
 │
-├── migrations/                       # Database migrations
-├── seeders/                          # Database seeders
+├── migrations/                       # Sequelize database migrations
+├── seeders/                          # Sequelize seeders
 ├── types/                            # TypeScript type definitions
-├── utils/                            # Utility functions
+├── utils/                            # Utility functions and scheduled jobs
 ├── app.ts                            # Express app setup
-└── server.ts                         # Server bootstrap
+└── server.ts                         # Server bootstrap and job startup
 ```
 ---
 
@@ -154,7 +161,7 @@ src/
 
 ```bash
 git clone <repository-url>
-cd healpoint
+cd HealPoint
 ```
 
 ### 2. Install Dependencies
@@ -169,7 +176,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # Server Configuration
-PORT=5000
+port=5000
 
 # Database Configuration
 DB_NAME=heal_point
@@ -205,8 +212,12 @@ npm start
 | Setting | Value |
 |---------|-------|
 | **Base URL** | `/api` |
+| **Auth URL** | `/api/auth` |
+| **Notifications URL** | `/api/notifications` |
 | **Static Uploads** | `/uploads` |
-| **Default Frontend Origin** | `http://localhost:5173` |
+| **Frontend CORS Origin** | `http://localhost:5173` |
+| **Database** | MySQL via Sequelize |
+| **Background Jobs** | Payment expiry and consultation expiry |
 ---
 
 ## 📊 Database Modules
@@ -216,7 +227,7 @@ The system contains the following **core entities**:
 - Users
 - Doctors
 - Patients
-- Departments
+- Departments / Specializations
 - Availability
 - Unavailability
 - Special Availability
@@ -224,40 +235,33 @@ The system contains the following **core entities**:
 - Appointments
 - Payments
 - Notifications
+- Reviews
 
 ### Appointment Workflow
 
 ```
-Doctor Creates Availability
+Doctor creates availability
     ↓
-Slots Generated Automatically
+Slots are generated
     ↓
-Patient Books Appointment
+Patient books appointment
     ↓
-Payment Order Created
+Payment order is created
     ↓
-Payment Verified
+Payment is verified
     ↓
-Appointment Confirmed
-    ↓
-Patient Joins Consultation
-    ↓
-Doctor Starts Consultation
-    ↓
-Doctor Completes Consultation
-    ↓
-Earnings Recorded
+Appointment / consultation lifecycle continues
 ```
+
 ---
 
-## 🔐 API Endpoints
+## 🚀 Notes
 
-### Authentication
+- Development uses `nodemon` and `tsx` to run `src/server.ts` directly.
+- Uploaded files are served from the `uploads` directory.
+- The API starts by authenticating the database, then launches scheduled jobs for payment expiry and consultation expiry.
+- Route modules are mounted under `/api`, with notifications mounted under `/api/notifications`.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | User login |
 | POST | `/api/auth/refresh` | Refresh access token |
 | POST | `/api/auth/logout` | User logout |
 

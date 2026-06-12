@@ -17,8 +17,6 @@ export class EarningsService {
         const payments = await this.earningsRepository.getDoctorPaidPayments(doctorId);
 
         let totalEarnings = 0;
-        let videoEarnings = 0;
-        let clinicEarnings = 0;
         let completedAppointments = 0;
 
         for (const payment of payments as any[]) {
@@ -30,47 +28,44 @@ export class EarningsService {
             if (appointment?.status === "completed") {
                 completedAppointments++;
             }
-
-            if (
-                appointment?.consultation_type?.toLowerCase() === "video"
-            ) {
-                videoEarnings += amount;
-            }
-
-            if (
-                appointment?.consultation_type?.toLowerCase() === "clinic"
-            ) {
-                clinicEarnings += amount;
-            }
         }
 
         return {
             total_earnings: totalEarnings,
             paid_appointments: payments.length,
             completed_appointments: completedAppointments,
-            video_earnings: videoEarnings,
-            clinic_earnings: clinicEarnings
         };
     }
 
-    async getPaymentHistory(doctorId: number) {
-
+    async getPaymentHistory(
+        doctorId: number,
+        page: number = 1,
+        limit: number = 10,
+        date?: string
+    ) {
         const doctor = await this.doctorRepository.getDoctorById(doctorId);
-
         if (!doctor)
             throw new Error("Doctor not found");
-
-        const payments = await this.earningsRepository.getDoctorPaymentHistory(doctorId);
+        const payments = await this.earningsRepository.getDoctorPaymentHistory(
+            doctorId,
+            page,
+            limit,
+            date
+        );
 
         return {
-            payments: payments.map((payment: any) => ({
+            totalItems: payments.count,
+            totalPages: Math.ceil(payments.count / limit),
+            currentPage: page,
+            payments: payments.rows.map((payment: any) => ({
                 id: payment.id,
                 patient: payment.appointment.patient.user.name,
                 date: payment.appointment.appointment_date,
                 time: payment.appointment.start_time,
                 amount: Number(payment.amount),
                 status: "Paid",
-                type: payment.appointment.consultation_type === "Video Call" ? "Video Call" : "Clinic Visit"
+                type: payment.appointment.consultation_type
+
             }))
         };
     }

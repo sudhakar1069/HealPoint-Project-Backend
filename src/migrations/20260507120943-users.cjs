@@ -45,6 +45,21 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
+      reset_password_otp: {
+        type: Sequelize.STRING(6),
+        allowNull: true
+      },
+
+      reset_password_expires: {
+        type: Sequelize.DATE,
+        allowNull: true
+      },
+      otp_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

@@ -10,12 +10,13 @@ interface AppointmentAttributes {
     end_time: string;
     consultation_type: string;
     reason?: string;
-    status: "pending_payment" | "confirmed" | "cancelled"| "completed";
+    status: "pending_payment" | "confirmed" | "cancelled" | "completed";
     payment_expires_at: Date | null;
     meeting_room?: string | null;
-    consultation_status?: "scheduled" | "ongoing" | "completed";
+    consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
     consultation_started_at?: Date | null;
     consultation_ended_at?: Date | null;
+    review_given?:boolean;
 }
 
 interface AppointmentCreationAttributes
@@ -37,9 +38,10 @@ class Appointment extends Model<
     declare status: "pending_payment" | "confirmed" | "cancelled" | "completed";
     declare payment_expires_at: Date | null;
     declare meeting_room?: string | null;
-    declare consultation_status?: "scheduled" | "ongoing" | "completed";
+    declare consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
     declare consultation_started_at?: Date | null;
     declare consultation_ended_at?: Date | null;
+    declare review_given?:boolean;
 }
 
 Appointment.init(
@@ -118,7 +120,8 @@ Appointment.init(
             type: DataTypes.ENUM(
                 "scheduled",
                 "ongoing",
-                "completed"
+                "completed",
+                "missed",
             ),
             allowNull: false,
             defaultValue: "scheduled"
@@ -130,6 +133,10 @@ Appointment.init(
         consultation_ended_at: {
             type: DataTypes.DATE,
             allowNull: true,
+        },
+        review_given: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         }
     },
     {

@@ -15,6 +15,7 @@ export const generateAccessToken = (user: JwtPayload): string => {
         }
     );
 };
+
 export const generateRefreshToken = (user: JwtPayload): string => {
     return jwt.sign(
         { id: user.id, role: user.role, profile_id: user.profile_id },

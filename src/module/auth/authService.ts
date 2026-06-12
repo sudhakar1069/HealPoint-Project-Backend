@@ -4,9 +4,11 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RegisterDTO } from "../../types/registerDto.js";
 import { generateFileUrl } from "../../utils/generateFileUrl.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/tokens.js";
+import { EmailService } from "../../utils/emailService.js";
 
 export class AuthService {
-    constructor(private userRepository: any) {}
+    constructor(private userRepository: any) { }
+    private emailService = new EmailService();
 
     async register(data: RegisterDTO) {
         const { name, phone_number, gender, email, password, confirm_password } = data;
@@ -36,6 +38,11 @@ export class AuthService {
             address: null
         });
 
+        try {
+            await this.emailService.sendWelcomeEmail(user.email, user.name);
+        } catch (error) {
+            console.error("Welcome email failed:", error);
+        }
         return user;
     }
 
@@ -126,5 +133,84 @@ export class AuthService {
         await user.update({ refresh_token: null });
 
         return { success: true, message: "Logged out successfully" };
+    }
+
+    async forgotPassword(email: string) {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            return {
+                success: true,
+                message: "If an account exists, an OTP has been sent"
+            };
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const expires = new Date(Date.now() + 15 * 60 * 1000);
+        await this.userRepository.saveResetOtp(user.id, otp, expires);
+        await this.emailService.sendPasswordResetOtp(user.email, otp);
+        return {
+            success: true,
+            message: "If an account exists, an OTP has been sent"
+        };
+    }
+
+    async verifyResetOtp(email: string, otp: string) {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw {
+                status: 400,
+                message: "Invalid or expired OTP"
+            };
+        }
+        if (
+            user.reset_password_otp !== otp ||
+            !user.reset_password_expires ||
+            user.reset_password_expires < new Date()
+        ) {
+            throw {
+                status: 400,
+                message: "Invalid or expired OTP"
+            };
+        }
+        await user.update({ otp_verified: true });
+        return {
+            success: true,
+            message: "OTP verified"
+        };
+    }
+
+    async resetPassword(email: string, password: string, confirmPassword: string) {
+        if (password !== confirmPassword) {
+            throw {
+                status: 400,
+                message: "Password and confirm password must be same"
+            };
+        }
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw {
+                status: 404,
+                message: "User not found"
+            };
+        }
+        if (!user.otp_verified) {
+            throw {
+                status: 400,
+                message: "OTP verification required"
+            };
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await user.update({
+            password: hashedPassword,
+            reset_password_otp: null,
+            reset_password_expires: null,
+            otp_verified: false,
+            refresh_token: null
+        });
+        return {
+            success: true,
+            message: "Password reset successfully"
+        };
     }
 }

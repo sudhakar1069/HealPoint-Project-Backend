@@ -66,6 +66,7 @@ export const refreshToken = asyncHandler(
         });
     }
 );
+
 export const logout = asyncHandler(
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies.refreshToken;
@@ -77,7 +78,34 @@ export const logout = asyncHandler(
             sameSite: "none",
             path: "/",
         });
+        return res.status(200).json(result);
+    }
+);
 
+export const forgotPassword = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { email } = req.body;
+        const result = await authService.forgotPassword(email);
+        return res.status(200).json(result);
+    }
+);
+
+export const resetPassword = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { email, password, confirm_password } = req.body;
+        const result = await authService.resetPassword(
+            email,
+            password,
+            confirm_password
+        );
+        return res.status(200).json(result);
+    }
+);
+
+export const verifyResetOtp = asyncHandler(
+    async (req: Request, res: Response) => {
+        const { email, otp } = req.body;
+        const result = await authService.verifyResetOtp(email, otp);
         return res.status(200).json(result);
     }
 );

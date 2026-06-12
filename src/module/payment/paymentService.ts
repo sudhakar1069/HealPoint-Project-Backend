@@ -4,6 +4,7 @@ import { PaymentRepository } from "./paymentRepository.js";
 import { AppointmentRepository } from "../appointments/appointmentRepository.js";
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { generateMeetingRoom } from "../../utils/jitsiMeeting.js";
+import { EmailService } from "../../utils/emailService.js";
 interface VerifyPaymentDto {
     razorpay_order_id: string;
     razorpay_payment_id: string;
@@ -16,6 +17,7 @@ export class PaymentService {
         private appointmentRepository: AppointmentRepository,
         private doctorRepository: DoctorRepository
     ) { }
+    private emailService = new EmailService()
 
     async createOrder(patientId: number, appointmentId: number) {
         const appointment = await this.appointmentRepository.getAppointmentById(
@@ -120,42 +122,40 @@ export class PaymentService {
             "confirmed"
         );
 
-        // Create Jitsi room only for video consultations
-        console.log("Consultation Type:", appointment.consultation_type);
-
-        if (
-            appointment.consultation_type?.toLowerCase() === "video call"
-        ) {
-            console.log("Video consultation detected");
-
-            const meetingRoom = generateMeetingRoom(
-                appointment.doctor_id,
-                appointment.patient_id
-            );
-
-            console.log("Generated Room:", meetingRoom);
-
-            const result =
-                await this.appointmentRepository.updateMeetingDetails(
-                    appointment.id,
-                    meetingRoom
-                );
-
-            console.log("Update Result:", result);
-        } else {
-            console.log("Condition failed");
-        }
-
-        await this.appointmentRepository.clearPaymentExpiry(
-            payment.appointment_id
+        const meetingRoom = generateMeetingRoom(
+            appointment.doctor_id,
+            appointment.patient_id
         );
+
+        await this.appointmentRepository.updateMeetingDetails(
+            appointment.id,
+            meetingRoom
+        );
+
+        await this.appointmentRepository.clearPaymentExpiry(payment.appointment_id);
+
+        const updatedAppointment: any =
+            await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
+        const meetingLink =
+            `https://meet.jit.si/${updatedAppointment.meeting_room}`;
+
+        if (updatedAppointment) {
+            await this.emailService.sendAppointmentConfirmationEmail(
+                updatedAppointment.patient.user.email,
+                updatedAppointment.patient.user.name,
+                updatedAppointment.doctor.user.name,
+                updatedAppointment.appointment_date,
+                updatedAppointment.start_time,
+                updatedAppointment.consultation_type,
+                meetingLink
+            );
+        }
 
         return {
             success: true,
             appointment_id: payment.appointment_id
         };
     }
-
     async expirePendingPayments() {
         const expiredAppointments =
             await this.appointmentRepository.getExpiredPendingAppointments();
@@ -179,7 +179,6 @@ export class PaymentService {
                 appointment.id
             );
         }
-
         return { success: true };
     }
 }

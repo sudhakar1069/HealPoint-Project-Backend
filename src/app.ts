@@ -11,7 +11,10 @@ import appointmentRoutes from "./module/appointments/appointmentRoutes.js"
 import paymentRoutes from "./module/payment/paymentRoutes.js"
 import notificationRoutes from "./module/notifications/notificationRoutes.js"
 import earningRoutes from "./module/earnings/earningRoutes.js"
+import reviewRoutes from "./module/reviews/reviewRoutes.js"
+import dashboardRoutes from "./module/dashboard/dashboardRoutes.js"
 import { errorHandler } from "./middleware/errorHandler.js";
+import { globalLimiter } from "./middleware/rateLimiter.js";
 import "./models/associationsModel.js"
 import cors from "cors"
 import cookieParser from "cookie-parser";
@@ -26,7 +29,8 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
 }));
-
+app.set("trust proxy", 1);
+app.use(globalLimiter)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api", doctorRoutes)
@@ -38,8 +42,10 @@ app.use("/api", departmentRoutes)
 app.use("/api", slotRoutes)
 app.use("/api", appointmentRoutes)
 app.use("/api", paymentRoutes)
-app.use("/api/notifications", notificationRoutes)
 app.use("/api", earningRoutes)
+app.use("/api", reviewRoutes)
+app.use("/api", dashboardRoutes)
+app.use("/api/notifications", notificationRoutes)
 app.use(errorHandler);
 
 export default app;
