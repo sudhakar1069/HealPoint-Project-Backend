@@ -18,7 +18,7 @@ const slotService = new SlotService(
 
 const appointmentService = new AppointmentService(
      appointmentRepository, new DoctorRepository(), new PatientRepository(),
-    slotService, new PaymentRepository(),new ReviewRepository()
+    slotService, new PaymentRepository()
 );
 
 export const startConsultationExpiryJob = () => {
