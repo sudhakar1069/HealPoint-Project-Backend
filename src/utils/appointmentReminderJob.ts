@@ -25,6 +25,7 @@ const appointmentService = new AppointmentService(
 
 export const startAppointmentReminderJob = () => {
     cron.schedule("* * * * *", async () => {
+        //  console.log("[REMINDER JOB] Running", new Date().toISOString());
         try {
             await appointmentService.sendUpcomingAppointmentReminders();
         } catch (error) {

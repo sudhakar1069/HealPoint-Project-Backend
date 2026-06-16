@@ -38,7 +38,6 @@ export class DoctorUnavailabilityService {
         if (!doctor) {
             throw new Error("Doctor not found");
         }
-
         return doctor;
     }
 

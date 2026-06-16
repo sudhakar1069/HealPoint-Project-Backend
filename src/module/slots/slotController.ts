@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { SlotRepository } from "./slotRepository.js";
 import { SlotService } from "./slotService.js";
-
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 
 const slotRepository = new SlotRepository();

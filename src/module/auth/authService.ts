@@ -2,7 +2,6 @@ import bcrypt from "bcrypt";
 import type { Request } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RegisterDTO } from "../../types/registerDto.js";
-import { generateFileUrl } from "../../utils/generateFileUrl.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/tokens.js";
 import { EmailService } from "../../utils/emailService.js";
 
@@ -38,11 +37,11 @@ export class AuthService {
             address: null
         });
 
-        try {
-            await this.emailService.sendWelcomeEmail(user.email, user.name);
-        } catch (error) {
-            console.error("Welcome email failed:", error);
-        }
+        // try {
+        //     await this.emailService.sendWelcomeEmail(user.email, user.name);
+        // } catch (error) {
+        //     console.error("Welcome email failed:", error);
+        // }
         return user;
     }
 
@@ -89,7 +88,7 @@ export class AuthService {
                 name: user.name,
                 role: user.role,
                 email: user.email,
-                profile_picture: generateFileUrl(req, user.profile_picture)
+                profile_picture: user.profile_picture
             }
         };
     }
@@ -103,7 +102,8 @@ export class AuthService {
 
             const accessToken = generateAccessToken({
                 id: decoded.id,
-                role: user.role
+                role: user.role,
+                profile_id: user.profile_id
             });
 
             return { success: true, accessToken };
@@ -147,7 +147,13 @@ export class AuthService {
 
         const expires = new Date(Date.now() + 15 * 60 * 1000);
         await this.userRepository.saveResetOtp(user.id, otp, expires);
-        await this.emailService.sendPasswordResetOtp(user.email, otp);
+
+        try {
+            await this.emailService.sendPasswordResetOtp(user.email, otp);
+        } catch (error) {
+            console.error("Email failed:", error);
+        }
+
         return {
             success: true,
             message: "If an account exists, an OTP has been sent"

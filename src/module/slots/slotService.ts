@@ -214,11 +214,9 @@ export class SlotService {
                         }
                     }
                 }
-
                 finalSlots.push({ ...slot, status });
             }
         }
-
         return finalSlots;
     }
 }

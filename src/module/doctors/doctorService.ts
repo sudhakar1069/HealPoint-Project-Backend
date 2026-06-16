@@ -7,7 +7,6 @@ import type { DoctorAttributes } from "../../models/doctorModel.js";
 import { NotificationService } from "../notifications/notificationService.js";
 
 export class DoctorService {
-    baseURL = "http://localhost:5000";
 
     constructor(
         private doctorRepository: DoctorRepository,
@@ -172,7 +171,7 @@ export class DoctorService {
         doctorId: number,
         loggedInUserId: number,
         loggedInUserRole: string,
-        filename: string
+        imageUrl: string
     ) {
         const doctor = await this.doctorRepository.getDoctorById(doctorId);
 
@@ -186,11 +185,11 @@ export class DoctorService {
 
         await this.doctorRepository.updateUser(
             doctor.user_id,
-            { profile_picture: filename },
+            { profile_picture: imageUrl },
             null
         );
 
-        return { profile_picture: filename };
+        return { profile_picture: imageUrl };
     }
 
     async deleteDoctor(id: number) {

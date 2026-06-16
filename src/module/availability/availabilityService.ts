@@ -9,7 +9,7 @@ export class DoctorAvailabilityService {
     constructor(
         private doctoravailabilityRepository: DoctorAvailabilityRepository,
         private doctorRepository: DoctorRepository
-    ) {}
+    ) { }
 
     private isTimeOverlapping(
         newStart: string,
@@ -20,9 +20,18 @@ export class DoctorAvailabilityService {
         return newStart < existingEnd && newEnd > existingStart;
     }
 
-    async createAvailability(doctorId: number, data: CreateAvailabilityDTO) {
+    private async validateDoctor(doctorId: number) {
         const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) throw new Error("Doctor not found");
+
+        if (!doctor) {
+            throw new Error("Doctor not found");
+        }
+        return doctor;
+    }
+
+    async createAvailability(doctorId: number, data: CreateAvailabilityDTO) {
+
+        await this.validateDoctor(doctorId);
 
         if (data.start_time >= data.end_time)
             throw new Error("Start time must be less than end time");
@@ -39,9 +48,8 @@ export class DoctorAvailabilityService {
     }
 
     async getDoctorAvailability(doctorId: number) {
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) throw new Error("Doctor not found");
 
+        await this.validateDoctor(doctorId);
         return await this.doctoravailabilityRepository.getDoctorAvailability(doctorId);
     }
 
@@ -57,8 +65,7 @@ export class DoctorAvailabilityService {
         availabilityId: number,
         data: UpdateAvailabilityDTO
     ) {
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) throw new Error("Doctor not found");
+        await this.validateDoctor(doctorId);
 
         const availability =
             await this.doctoravailabilityRepository.getAvailabilityById(availabilityId);
@@ -93,13 +100,13 @@ export class DoctorAvailabilityService {
 
         return await this.doctoravailabilityRepository.updateAvailability(
             availabilityId,
-            data as any 
+            data
         );
     }
 
     async deleteAvailability(doctorId: number, availabilityId: number) {
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) throw new Error("Doctor not found");
+        
+        await this.validateDoctor(doctorId);
 
         const availability =
             await this.doctoravailabilityRepository.getAvailabilityById(availabilityId);

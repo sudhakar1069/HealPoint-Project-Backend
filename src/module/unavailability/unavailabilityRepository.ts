@@ -11,8 +11,7 @@ export class DoctorUnavailabilityRepository {
         return await DoctorUnavailability.findAll({
             where: { doctor_id: doctorId },
             order: [
-                ["unavailable_date", "ASC"],
-                ["start_time", "ASC"]
+                ["unavailable_date", "ASC"]
             ]
         });
     }

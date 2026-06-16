@@ -467,18 +467,20 @@ export class AppointmentService {
 
             const diffMinutes = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60);
 
-            if (diffMinutes <= 10 && diffMinutes > 9) {
-
-                await this.emailService.sendAppointmentReminderEmail(
-                    appointment.patient.user.email,
-                    appointment.patient.user.name,
-                    appointment.doctor.user.name,
-                    appointment.appointment_date,
-                    appointment.start_time,
-                    appointment.meeting_room
-                );
-
-                await this.appointmentRepository.markReminderSent(appointment.id);
+            if (diffMinutes <= 10 && diffMinutes > 8) {
+                try {
+                    await this.emailService.sendAppointmentReminderEmail(
+                        appointment.patient.user.email,
+                        appointment.patient.user.name,
+                        appointment.doctor.user.name,
+                        appointment.appointment_date,
+                        appointment.start_time,
+                        appointment.meeting_room
+                    );
+                    await this.appointmentRepository.markReminderSent(appointment.id);
+                } catch (error) {
+                    console.error("Email failed:", error);
+                }
             }
         }
         return {

@@ -26,7 +26,7 @@ export class DoctorAvailabilityRepository {
         });
     }
 
-    async updateAvailability(id: number, data: DoctorAvailabilityAttributes) {
+    async updateAvailability(id: number, data: Partial<DoctorAvailabilityAttributes>) {
         await DoctorAvailability.update(data,
             { where: { id } }
         );

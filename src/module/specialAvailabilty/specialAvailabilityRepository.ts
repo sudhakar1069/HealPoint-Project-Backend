@@ -10,8 +10,7 @@ export class SpecialAvailabilityRepository {
         return await SpecialAvailability.findAll({
             where: { doctor_id: doctorId },
             order: [
-                ["date", "ASC"],
-                ["start_time", "ASC"]
+                ["date", "ASC"]
             ]
         });
     }

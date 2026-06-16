@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { DoctorRepository } from "./doctorRepository.js";
 import { DoctorService } from "./doctorService.js";
-import { generateFileUrl } from "../../utils/generateFileUrl.js";
 import { NotificationRepository } from "../notifications/notificationRepository.js";
 import { NotificationService } from "../notifications/notificationService.js";
 
@@ -19,13 +18,7 @@ const doctorService = new DoctorService(
 );
 
 export const createDoctor = asyncHandler(async (req: Request, res: Response) => {
-    const result = await doctorService.createDoctor(req.body, req.file?.filename);
-    if (result.user?.profile_picture) {
-        result.user.profile_picture = generateFileUrl(
-            req,
-            result.user.profile_picture
-        );
-    }
+    const result = await doctorService.createDoctor(req.body, req.file?.path);
     return res.status(201).json({
         success: true,
         message: "Doctor created successfully",
@@ -53,23 +46,10 @@ export const getAllDoctors = asyncHandler(
             filters
         );
 
-        const updatedDoctors = doctors.doctors.map((doctor: any) => {
-            if (doctor.user?.profile_picture) {
-                doctor.user.profile_picture = generateFileUrl(
-                    req,
-                    doctor.user.profile_picture
-                );
-            }
-            return doctor;
-        });
-
         return res.status(200).json({
             success: true,
             message: "Doctors fetched successfully",
-            data: {
-                ...doctors,
-                doctors: updatedDoctors
-            },
+            data: doctors,
         });
     }
 );
@@ -78,13 +58,6 @@ export const getDoctorById = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorId = Number(req.params.id);
         const doctor: any = await doctorService.getDoctorById(doctorId);
-
-        if (doctor.user?.profile_picture) {
-            doctor.user.profile_picture = generateFileUrl(
-                req,
-                doctor.user.profile_picture
-            );
-        }
 
         return res.status(200).json({
             success: true,
@@ -97,13 +70,8 @@ export const getDoctorById = asyncHandler(
 export const getMyDoctorProfile = asyncHandler(
     async (req: Request, res: Response) => {
         const userId = req.user!.id;
-        const doctor: any = await doctorService.getMyDoctorProfile(userId);
-        if (doctor.user?.profile_picture) {
-            doctor.user.profile_picture = generateFileUrl(
-                req,
-                doctor.user.profile_picture
-            );
-        }
+        const doctor = await doctorService.getMyDoctorProfile(userId);
+
         return res.status(200).json({
             success: true,
             message: "Doctor profile fetched successfully",
@@ -142,12 +110,9 @@ export const updateDoctorPhoto = asyncHandler(
             doctorId,
             loggedInUserId,
             loggedInUserRole,
-            req.file.filename
+            req.file.path
         );
-        result.profile_picture = generateFileUrl(
-            req,
-            req.file.filename
-        ) as string;
+        result.profile_picture = req.file.path;
 
         return res.status(200).json({
             success: true,

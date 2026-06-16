@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { PatientRepository } from "./patientRepository.js";
 import { PatientService } from "./patientService.js";
-import { generateFileUrl } from "../../utils/generateFileUrl.js";
 
 const patientRepository = new PatientRepository();
 const patientService = new PatientService(patientRepository);
@@ -34,13 +33,6 @@ export const getMyPatientProfile = asyncHandler(
 
         const userId = req.user!.id;
         const patient: any = await patientService.getMyPatientProfile(userId);
-
-        if (patient.user?.profile_picture) {
-            patient.user.profile_picture = generateFileUrl(
-                req,
-                patient.user.profile_picture
-            );
-        }
 
         return res.status(200).json({
             success: true,
@@ -75,13 +67,9 @@ export const updateMyPatientPhoto = asyncHandler(
         }
         const result = await patientService.updateMyPatientPhoto(
             userId,
-            req.file.filename
+            req.file.path
         );
-
-        result.profile_picture = generateFileUrl(
-            req,
-            req.file.filename
-        ) as string;
+        result.profile_picture = req.file.path;
 
         return res.status(200).json({
             success: true,
@@ -93,13 +81,8 @@ export const updateMyPatientPhoto = asyncHandler(
 
 export const getPatientById = asyncHandler(async (req: Request, res: Response) => {
     const patientId = Number(req.params.id);
-    const patient: any = await patientService.getPatientById(patientId);
-    if (patient.user?.profile_picture) {
-        patient.user.profile_picture = generateFileUrl(
-            req,
-            patient.user.profile_picture
-        );
-    }
+    const patient = await patientService.getPatientById(patientId);
+
     return res.status(200).json({
         success: true,
         message: "Patient fetched successfully",
@@ -136,10 +119,10 @@ export const updatePatientPhoto = asyncHandler(async (req: Request, res: Respons
     const result = await patientService.updatePatientPhoto(
         patientId,
         loggedInUserId,
-        req.file.filename
+        req.file.path
     );
 
-    result.profile_picture = generateFileUrl(req, req.file.filename) as string;
+    result.profile_picture = req.file.path;
     return res.status(200).json({
         success: true,
         message: "Patient photo updated successfully",

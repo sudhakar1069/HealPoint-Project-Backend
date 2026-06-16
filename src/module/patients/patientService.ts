@@ -96,7 +96,7 @@ export class PatientService {
     async updatePatientPhoto(
         patientId: number,
         loggedInUserId: number,
-        filename: string
+        imageUrl: string
     ) {
         const patient = await this.patientRepository.getPatientById(patientId);
         if (!patient) { throw new Error("Patient not found"); }
@@ -106,12 +106,12 @@ export class PatientService {
         await this.patientRepository.updateUser(
             patient.user_id,
             {
-                profile_picture: filename
+                profile_picture: imageUrl
             },
             null
         );
         return {
-            profile_picture: filename
+            profile_picture: imageUrl
         };
     }
 

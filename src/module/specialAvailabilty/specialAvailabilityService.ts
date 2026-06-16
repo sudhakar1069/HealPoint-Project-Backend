@@ -16,16 +16,22 @@ export class SpecialAvailabilityService {
         existingEnd: string
     ) {
 
-        return newStart < existingEnd &&
-            newEnd > existingStart;
+        return newStart < existingEnd && newEnd > existingStart;
+    }
+
+    private async validateDoctor(doctorId: number) {
+        const doctor = await this.doctorRepository.getDoctorById(doctorId);
+
+        if (!doctor) {
+            throw new Error("Doctor not found");
+        }
+        return doctor;
     }
 
     async createSpecialAvailability(doctorId: number, data: CreateSpecialAvailabilityDto) {
 
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) {
-            throw new Error("Doctor not found");
-        }
+        await this.validateDoctor(doctorId);
+
         if (data.start_time >= data.end_time) {
             throw new Error(
                 "Start time must be less than end time"
@@ -57,10 +63,8 @@ export class SpecialAvailabilityService {
     }
 
     async getDoctorSpecialAvailabilities(doctorId: number) {
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) {
-            throw new Error("Doctor not found");
-        }
+
+        await this.validateDoctor(doctorId);
 
         return await this.specialAvailabilityRepository
             .getDoctorSpecialAvailabilities(doctorId);
@@ -83,10 +87,7 @@ export class SpecialAvailabilityService {
         specialAvailabilityId: number,
         data: UpdateSpecialAvailabilityDto
     ) {
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) {
-            throw new Error("Doctor not found");
-        }
+        await this.validateDoctor(doctorId);
 
         const specialAvailability = await this.specialAvailabilityRepository
             .getSpecialAvailabilityById(specialAvailabilityId);
@@ -136,10 +137,7 @@ export class SpecialAvailabilityService {
 
     async deleteSpecialAvailability(doctorId: number, specialAvailabilityId: number) {
 
-        const doctor = await this.doctorRepository.getDoctorById(doctorId);
-        if (!doctor) {
-            throw new Error("Doctor not found");
-        }
+        await this.validateDoctor(doctorId);
 
         const specialAvailability = await this.specialAvailabilityRepository
             .getSpecialAvailabilityById(specialAvailabilityId);

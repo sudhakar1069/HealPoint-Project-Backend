@@ -4,7 +4,7 @@ import { authenticate } from "../../middleware/authenticate.js";
 
 const router = express.Router();
 router.post("/payments/create-order", authenticate, createOrder);
-router.post("/payments/verify", authenticate, verifyPayment);
+router.post("/payments/verify", verifyPayment);
 router.get("/payments/appointment/:appointmentId", authenticate, getPaymentByAppointment);
 
 
