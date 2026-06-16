@@ -26,8 +26,7 @@ const appointmentService = new AppointmentService(
     doctorRepository,
     patientRepository,
     slotService,
-    paymentRepository,
-    reviewRepository
+    paymentRepository
 );
 
 export const bookAppointment = asyncHandler(async (req: any, res: Response) => {
