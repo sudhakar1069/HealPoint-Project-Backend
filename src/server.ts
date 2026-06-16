@@ -3,7 +3,7 @@ import app from "./app.js";
 import { startPaymentExpiryJob } from "./utils/paymentExpiryJob.js";
 import { startConsultationExpiryJob } from "./utils/consultationExpiryJob.js";
 import { startAppointmentReminderJob } from "./utils/appointmentReminderJob.js";
-const port = process.env.port || 5000;
+const port = process.env.PORT || 5000;
 const startServer = async () => {
     try {
         await sequelize.authenticate();
