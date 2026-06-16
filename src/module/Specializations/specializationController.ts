@@ -2,10 +2,15 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 
 import { SpecializationRepository } from "./departmentRepository.js";
-import { SpecializationService } from "./departmentService.js";
+import { SpecializationService } from "./specializationService.js";
+import { NotificationRepository } from "../notifications/notificationRepository.js";
+import { NotificationService } from "../notifications/notificationService.js";
 
 const specializationRepository = new SpecializationRepository();
-const specializationService = new SpecializationService(specializationRepository);
+const notificationRepository = new NotificationRepository();
+const notificationService = new NotificationService(notificationRepository);
+
+const specializationService = new SpecializationService(specializationRepository, notificationService);
 
 export const createSpecialization = asyncHandler(async (req: Request, res: Response) => {
     const specialization = await specializationService.createSpecialization(req.body);

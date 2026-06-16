@@ -14,6 +14,7 @@ router.post(
 router.get(
     "/appointments",
     authenticate,
+    authorize("admin"),
     appointmentController.getAllAppointments
 );
 

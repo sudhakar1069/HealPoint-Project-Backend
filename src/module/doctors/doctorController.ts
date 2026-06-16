@@ -1,11 +1,22 @@
-import type {  Request, Response } from "express";
+import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { DoctorRepository } from "./doctorRepository.js";
 import { DoctorService } from "./doctorService.js";
 import { generateFileUrl } from "../../utils/generateFileUrl.js";
+import { NotificationRepository } from "../notifications/notificationRepository.js";
+import { NotificationService } from "../notifications/notificationService.js";
 
 const doctorRepository = new DoctorRepository();
-const doctorService = new DoctorService(doctorRepository);
+
+const notificationRepository = new NotificationRepository();
+const notificationService = new NotificationService(
+    notificationRepository
+);
+
+const doctorService = new DoctorService(
+    doctorRepository,
+    notificationService
+);
 
 export const createDoctor = asyncHandler(async (req: Request, res: Response) => {
     const result = await doctorService.createDoctor(req.body, req.file?.filename);

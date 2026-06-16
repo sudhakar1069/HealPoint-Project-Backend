@@ -495,4 +495,53 @@ export class AppointmentRepository {
             }
         }
     }
+
+    async getAppointmentsForReminder() {
+        return await Appointment.findAll({
+            where: {
+                status: "confirmed",
+                consultation_status: "scheduled",
+                consultation_type: "online",
+                reminder_sent: false
+            },
+            include: [
+                {
+                    model: Patient,
+                    as: "patient",
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: [
+                                "name",
+                                "email"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: Doctor,
+                    as: "doctor",
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: [
+                                "name"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+    }
+
+    async markReminderSent(appointmentId: number) {
+        return await Appointment.update(
+            { reminder_sent: true },
+            {
+                where: { id: appointmentId }
+            }
+        );
+    }
 }

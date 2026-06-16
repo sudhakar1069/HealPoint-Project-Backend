@@ -105,6 +105,11 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+      reminder_sent: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
     });
   },
 

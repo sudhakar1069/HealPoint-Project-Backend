@@ -136,8 +136,6 @@ export class PaymentService {
 
         const updatedAppointment: any =
             await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
-        const meetingLink =
-            `https://meet.jit.si/${updatedAppointment.meeting_room}`;
 
         if (updatedAppointment) {
             await this.emailService.sendAppointmentConfirmationEmail(
@@ -147,7 +145,7 @@ export class PaymentService {
                 updatedAppointment.appointment_date,
                 updatedAppointment.start_time,
                 updatedAppointment.consultation_type,
-                meetingLink
+    
             );
         }
 

@@ -54,7 +54,6 @@ export class EmailService {
         appointmentDate: string,
         appointmentTime: string,
         consultationType: string,
-        meeting_room: string
     ) {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -99,12 +98,6 @@ export class EmailService {
                     <td>${consultationType}</td>
                 </tr>
 
-                <tr>
-                    <td><strong>Meeting Link</strong></td>
-                    <td>
-                        <a href="${meeting_room}"> Join Meeting </a>
-                    </td>
-                </tr>
             </table>
 
             <p>
@@ -114,6 +107,60 @@ export class EmailService {
             <p>
                 Thank you for choosing HealPoint.
             </p>
+        `
+        });
+    }
+
+    async sendAppointmentReminderEmail(
+        email: string,
+        patientName: string,
+        doctorName: string,
+        appointmentDate: string,
+        appointmentTime: string,
+        meetingRoom: string
+    ) {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Appointment Reminder - Starts in 10 Minutes",
+            html: `
+            <h2>Appointment Reminder</h2>
+
+            <p>Hello ${patientName},</p>
+
+            <p>
+                Your appointment with
+                <strong>Dr. ${doctorName}</strong>
+                will begin in 10 minutes.
+            </p>
+
+            <table
+                border="1"
+                cellpadding="10"
+                cellspacing="0"
+                style="border-collapse: collapse;"
+            >
+                <tr>
+                    <td><strong>Date</strong></td>
+                    <td>${appointmentDate}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Time</strong></td>
+                    <td>${appointmentTime}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Meeting Link</strong></td>
+                    <td>
+                        <a href="${meetingRoom}">
+                            Join Consultation
+                        </a>
+                    </td>
+                </tr>
+            </table>
+
+            <p>Please join on time.</p>
         `
         });
     }

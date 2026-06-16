@@ -4,11 +4,16 @@ import { DoctorRepository } from "./doctorRepository.js";
 import type { CreateDoctorDTO } from "../../types/doctorDto.js";
 import type { userAttributes } from "../../models/userModel.js";
 import type { DoctorAttributes } from "../../models/doctorModel.js";
+import { NotificationService } from "../notifications/notificationService.js";
 
 export class DoctorService {
     baseURL = "http://localhost:5000";
 
-    constructor(private doctorRepository: DoctorRepository) { }
+    constructor(
+        private doctorRepository: DoctorRepository,
+        private notificationService: NotificationService,
+
+    ) { }
 
     async createDoctor(data: CreateDoctorDTO, profile_picture?: string) {
         if (!data.password) {
@@ -47,7 +52,10 @@ export class DoctorService {
             );
 
             await transaction.commit();
-
+            await this.notificationService.addDoctorNotification(
+                user.name,
+                doctor.specialization
+            );
             const userData = user.toJSON();
             const { password, refresh_token, ...safeUser } = userData;
 

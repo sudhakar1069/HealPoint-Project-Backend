@@ -1,23 +1,27 @@
 import { SpecializationRepository } from "./departmentRepository.js";
 import type { CreateSpecializationDTO, UpdateSpecializationDTO }
     from "../../types/specializationDto.js";
+import { NotificationService } from "../notifications/notificationService.js";
 
 export class SpecializationService {
-    constructor(private specializationRepository: SpecializationRepository) { }
+    constructor(
+        private specializationRepository: SpecializationRepository,
+        private notificationService: NotificationService
+    ) { }
 
     async createSpecialization(data: CreateSpecializationDTO) {
         const existing = await this.specializationRepository.findByName(data.name);
+
         if (existing) {
             throw new Error("Specialization already exists");
         }
-        return await this.specializationRepository.create(data);
+
+        const specialization = await this.specializationRepository.create(data);
+        await this.notificationService.addDepartmentNotification(specialization.name);
+        return specialization;
     }
 
-    async getAllSpecializations(
-        page: number,
-        limit: number,
-        search: string
-    ) {
+    async getAllSpecializations(page: number, limit: number, search: string) {
         return await this.specializationRepository.findAll(page, limit, search);
     }
 

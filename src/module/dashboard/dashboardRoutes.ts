@@ -5,8 +5,10 @@ import {
     getTodayAppointmentsForDashboard,
     getWeeklyLoadForDashboard,
     getMonthlyOverviewForDashboard,
-    getAdminDashboard,
-    getDoctorAvailabilityDashboard
+    getAdminAppointmentsOverview,
+    getDoctorAvailabilityDashboard,
+    getAdminEarningsReport,
+    getAdminDashboardOverview
 } from "./dashboardController.js";
 
 import { authenticate } from "../../middleware/authenticate.js";
@@ -43,10 +45,10 @@ router.get(
 );
 
 router.get(
-    "/admin/dashboard",
+    "/admin/dashboard/appointmentsOverview",
     authenticate,
     authorize("admin"),
-    getAdminDashboard
+    getAdminAppointmentsOverview
 );
 
 router.get(
@@ -55,4 +57,19 @@ router.get(
     authorize("admin"),
     getDoctorAvailabilityDashboard
 );
+
+router.get(
+    "/admin/dashboard/earnings-report",
+    authenticate,
+    authorize("admin"),
+    getAdminEarningsReport
+);
+
+router.get(
+    "/admin/dashboard-overview",
+    authenticate,
+    authorize("admin"),
+    getAdminDashboardOverview
+);
+
 export default router;

@@ -2,7 +2,7 @@ import express from "express";
 import authRoutes from "./module/auth/authRoutes.js";
 import doctorRoutes from "./module/doctors/doctorRoutes.js"
 import patientRoutes from "./module/patients/patientRoutes.js"
-import departmentRoutes from "./module/departments/departmentRoutes.js"
+import departmentRoutes from "./module/Specializations/specializationRoutes.js"
 import availabilityRoutes from "./module/availability/availabilityRoutes.js"
 import unavailabilityRoutes from "./module/unavailability/unavailabilityRoutes.js"
 import specialAvailabilityRoutes from "./module/specialAvailabilty/specialAvailabilityRouter.js"
@@ -14,7 +14,7 @@ import earningRoutes from "./module/earnings/earningRoutes.js"
 import reviewRoutes from "./module/reviews/reviewRoutes.js"
 import dashboardRoutes from "./module/dashboard/dashboardRoutes.js"
 import { errorHandler } from "./middleware/errorHandler.js";
-import { globalLimiter } from "./middleware/rateLimiter.js";
+// import { globalLimiter } from "./middleware/rateLimiter.js";
 import "./models/associationsModel.js"
 import cors from "cors"
 import cookieParser from "cookie-parser";
@@ -30,7 +30,7 @@ app.use(cors({
     credentials: true
 }));
 app.set("trust proxy", 1);
-app.use(globalLimiter)
+// app.use(globalLimiter)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api", doctorRoutes)

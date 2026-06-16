@@ -11,7 +11,7 @@ export const generateAccessToken = (user: JwtPayload): string => {
         { id: user.id, role: user.role, profile_id: user.profile_id },
         process.env.JWT_SECRET!,
         {
-            expiresIn: "45m",
+            expiresIn: "15m",
         }
     );
 };

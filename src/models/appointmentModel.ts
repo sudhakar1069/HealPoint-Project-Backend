@@ -16,7 +16,8 @@ interface AppointmentAttributes {
     consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
     consultation_started_at?: Date | null;
     consultation_ended_at?: Date | null;
-    review_given?:boolean;
+    review_given?: boolean;
+    reminder_sent?: boolean;
 }
 
 interface AppointmentCreationAttributes
@@ -41,7 +42,8 @@ class Appointment extends Model<
     declare consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
     declare consultation_started_at?: Date | null;
     declare consultation_ended_at?: Date | null;
-    declare review_given?:boolean;
+    declare review_given?: boolean;
+    declare reminder_sent?: boolean;
 }
 
 Appointment.init(
@@ -137,7 +139,12 @@ Appointment.init(
         review_given: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
-        }
+        },
+        reminder_sent: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
     },
     {
         sequelize,

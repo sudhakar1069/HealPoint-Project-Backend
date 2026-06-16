@@ -7,7 +7,7 @@ import {
     getAllSpecializations,
     getSpecializationById,
     updateSpecialization,
-} from "./departmentController.js";
+} from "./specializationController.js";
 import { authenticate } from "../../middleware/authenticate.js";
 import { authorize } from "../../middleware/authorize.js";
 

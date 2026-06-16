@@ -3,6 +3,7 @@ import Appointment from "../../models/appointmentModel.js";
 import Doctor from "../../models/doctorModel.js";
 import Patient from "../../models/patientModel.js";
 import { User } from "../../models/userModel.js";
+import Payment from "../../models/paymentModel.js";
 import DoctorUnavailability from "../../models/unavailabilityModel.js";
 
 export class DashboardRepository {
@@ -166,6 +167,31 @@ export class DashboardRepository {
         };
     }
 
+    async getDoctorEarnings(doctorId: number) {
+        const payments = await Payment.findAll({
+            attributes: ["amount"],
+            include: [
+                {
+                    model: Appointment,
+                    as: "appointment",
+                    attributes: [],
+                    where: {
+                        doctor_id: doctorId
+                    }
+                }
+            ],
+            where: {
+                status: "paid"
+            }
+        });
+
+        return payments.reduce(
+            (sum: number, payment: any) =>
+                sum + Number(payment.amount),
+            0
+        );
+    }
+
     async getDoctorAppointmentSummary(page: number = 1, limit: number = 10) {
         const offset = (page - 1) * limit;
         const { count, rows: doctors } = await Doctor.findAndCountAll({
@@ -212,6 +238,8 @@ export class DashboardRepository {
                 }
             });
 
+            const earnings = await this.getDoctorEarnings(doctor.id);
+
             result.push({
                 doctor_id: doctor.id,
                 doctor_name: doctor.user?.name,
@@ -220,7 +248,8 @@ export class DashboardRepository {
                 total,
                 completed,
                 cancelled,
-                missed
+                missed,
+                earnings
             });
         }
 
@@ -327,5 +356,182 @@ export class DashboardRepository {
             availableDoctors,
             unavailableDoctors
         };
+    }
+
+    async getTotalRevenue(startDate: Date, endDate: Date) {
+        const result: any = await Payment.findOne({
+            attributes: [[fn("SUM", col("amount")), "totalRevenue"]],
+            where: {
+                status: "paid",
+                created_at: {
+                    [Op.between]: [startDate, endDate]
+                }
+            },
+            raw: true
+        });
+
+        return Number(result?.totalRevenue || 0);
+    }
+
+    async getTotalConsultations(startDate: Date, endDate: Date) {
+        return await Payment.count({
+            where: {
+                status: "paid",
+                created_at: {
+                    [Op.between]: [startDate, endDate]
+                }
+            }
+        });
+    }
+
+    async getRevenueTrend(startDate: Date, endDate: Date) {
+        return await Payment.findAll({
+            attributes: [
+                [fn("DATE_FORMAT", col("created_at"), "%b"), "month"],
+                [fn("SUM", col("amount")), "revenue"]
+            ],
+            where: {
+                status: "paid",
+                created_at: {
+                    [Op.between]: [startDate, endDate]
+                }
+            },
+            group: [
+                fn("DATE_FORMAT", col("created_at"), "%b")
+            ],
+            raw: true
+        });
+    }
+
+    async getTotalDoctors() {
+        return await Doctor.count();
+    }
+
+    async getTotalPatients() {
+        return await Patient.count();
+    }
+
+    async getTotalAppointments() {
+        return await Appointment.count();
+    }
+
+    async getAdminRevenue() {
+        const result: any = await Payment.findOne({
+            attributes: [
+                [fn("SUM", col("amount")), "totalRevenue"]
+            ],
+            where: {
+                status: "paid"
+            },
+            raw: true
+        });
+
+        return Number(result?.totalRevenue || 0);
+    }
+
+    async getRecentConsultations(startDate: Date, endDate: Date) {
+        return await Payment.findAll({
+            attributes: ["amount", "status"],
+            where: {
+                status: "paid",
+                created_at: {
+                    [Op.between]: [startDate, endDate]
+                }
+            },
+            include: [
+                {
+                    model: Appointment,
+                    as: "appointment",
+                    attributes: [
+                        "appointment_date",
+                        "consultation_type"
+                    ],
+                    include: [
+                        {
+                            model: Doctor,
+                            as: "doctor",
+                            attributes: [
+                                "specialization"
+                            ],
+                            include: [
+                                {
+                                    model: User,
+                                    as: "user",
+                                    attributes: ["name"]
+                                }
+                            ]
+                        },
+                        {
+                            model: Patient,
+                            as: "patient",
+                            attributes: ["id"],
+                            include: [
+                                {
+                                    model: User,
+                                    as: "user",
+                                    attributes: ["name"]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            order: [["created_at", "DESC"]],
+            limit: 10
+        });
+    }
+
+    async getRecentAppointments() {
+        return await Appointment.findAll({
+            include: [
+                {
+                    model: Patient,
+                    as: "patient",
+                    attributes: ["id"],
+                    include: [{
+                        model: User,
+                        as: "user",
+                        attributes: ["name"]
+                    }]
+                },
+                {
+                    model: Doctor,
+                    as: "doctor",
+                    attributes: ["id"],
+                    include: [{
+                        model: User,
+                        as: "user",
+                        attributes: ["name"]
+                    }]
+                },
+                {
+                    model: Payment,
+                    as: "payment",
+                    attributes: ["amount", "status"]
+                }
+            ],
+            order: [["created_at", "DESC"]],
+            limit: 5
+        });
+    }
+
+    async getAppointmentTrend(year: number) {
+        return await Appointment.findAll({
+            attributes: [
+                [fn("MONTH", col("appointment_date")), "month"],
+                [fn("COUNT", col("id")), "appointments"]
+            ],
+            where: {
+                appointment_date: {
+                    [Op.between]: [
+                        new Date(year, 0, 1),
+                        new Date(year, 11, 31)
+                    ]
+                }
+            },
+            group: [fn("MONTH", col("appointment_date"))],
+            order: [[fn("MONTH", col("appointment_date")), "ASC"]],
+            raw: true
+        });
     }
 }

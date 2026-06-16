@@ -3,7 +3,7 @@ import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { PatientRepository } from "../patients/patientRepository.js";
 import { SlotService } from "../slots/slotService.js";
 import { PaymentRepository } from "../payment/paymentRepository.js";
-import { ReviewRepository } from "../reviews/reviewRepository.js";
+import { EmailService } from "../../utils/emailService.js";
 
 export class AppointmentService {
     constructor(
@@ -12,9 +12,9 @@ export class AppointmentService {
         private patientRepository: PatientRepository,
         private slotService: SlotService,
         private paymentRepository: PaymentRepository,
-        private reviewRepository: ReviewRepository
-    ) { }
 
+    ) { }
+    private emailService = new EmailService();
     private buildPaginationResponse(result: any, page: number, limit: number, appointments: any[]) {
         return {
             totalRecords: result.count,
@@ -289,6 +289,7 @@ export class AppointmentService {
             reason: appointment.reason,
             meeting_room: appointment.meeting_room,
             consultation_status: appointment.consultation_status,
+            review_given: appointment.review_given,
 
             doctor: {
                 id: appointment.doctor?.id,
@@ -449,6 +450,37 @@ export class AppointmentService {
 
     async expireMissedConsultations() {
         await this.appointmentRepository.markMissedConsultations();
+        return {
+            success: true
+        };
+    }
+
+    async sendUpcomingAppointmentReminders() {
+
+        const appointments = await this.appointmentRepository.getAppointmentsForReminder();
+        const now = new Date();
+        for (const appointment of appointments as any[]) {
+
+            const appointmentDateTime = new Date(
+                `${appointment.appointment_date}T${appointment.start_time}`
+            );
+
+            const diffMinutes = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60);
+
+            if (diffMinutes <= 10 && diffMinutes > 9) {
+
+                await this.emailService.sendAppointmentReminderEmail(
+                    appointment.patient.user.email,
+                    appointment.patient.user.name,
+                    appointment.doctor.user.name,
+                    appointment.appointment_date,
+                    appointment.start_time,
+                    appointment.meeting_room
+                );
+
+                await this.appointmentRepository.markReminderSent(appointment.id);
+            }
+        }
         return {
             success: true
         };

@@ -138,4 +138,76 @@ export class DashboardService {
             }
         };
     }
+
+    async getAdminEarningsReport(period: string) {
+        const now = new Date();
+        let startDate: Date;
+
+        if (period === "week") {
+            startDate = new Date();
+            startDate.setDate(now.getDate() - 7);
+        } else if (period === "month") {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else {
+            startDate = new Date(now.getFullYear(), 0, 1);
+        }
+
+        const totalRevenue = await this.dashboardRepository.getTotalRevenue(startDate, now);
+        const totalConsultations = await this.dashboardRepository.getTotalConsultations(startDate, now);
+        const revenueTrend = await this.dashboardRepository.getRevenueTrend(startDate, now);
+
+        const consultations = await this.dashboardRepository.getRecentConsultations(startDate, now);
+
+        const recentConsultations = consultations.map((item: any) => ({
+            patientName: item.appointment?.patient?.user?.name || null,
+            doctorName: item.appointment?.doctor?.user?.name || null,
+            specialization: item.appointment?.doctor?.specialization || null,
+            consultationType: item.appointment?.consultation_type || null,
+            appointmentDate: item.appointment?.appointment_date || null,
+            amount: Number(item.amount),
+            paymentStatus: item.status
+        }));
+
+        return {
+            summary: {
+                totalRevenue,
+                totalConsultations,
+                avgPerVisit: totalConsultations ? Math.round(totalRevenue / totalConsultations) : 0
+            },
+            revenueTrend,
+            recentConsultations
+        };
+    }
+
+    async getAdminDashboardOverview(year: number) {
+    const totalDoctors = await this.dashboardRepository.getTotalDoctors();
+    const totalPatients = await this.dashboardRepository.getTotalPatients();
+    const totalAppointments = await this.dashboardRepository.getTotalAppointments();
+    const totalRevenue = await this.dashboardRepository.getAdminRevenue();
+
+    const appointmentTrend = await this.dashboardRepository.getAppointmentTrend(year);
+
+    const appointments = await this.dashboardRepository.getRecentAppointments();
+
+    const recentAppointments = appointments.map((item: any) => ({
+        patientName: item.patient?.user?.name || null,
+        doctorName: item.doctor?.user?.name || null,
+        appointmentDate: item.appointment_date || null,
+        consultationType: item.consultation_type || null,
+        amount: Number(item.payment?.amount || 0),
+        paymentStatus: item.payment?.status || null,
+        status: item.status
+    }));
+
+    return {
+        summary: {
+            totalDoctors,
+            totalPatients,
+            totalAppointments,
+            totalRevenue
+        },
+        appointmentTrend,
+        recentAppointments
+    };
+}
 }

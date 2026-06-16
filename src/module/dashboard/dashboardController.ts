@@ -71,7 +71,7 @@ export const getMonthlyOverviewForDashboard = asyncHandler(
     }
 );
 
-export const getAdminDashboard = asyncHandler(
+export const getAdminAppointmentsOverview = asyncHandler(
     async (req: Request, res: Response) => {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
@@ -105,3 +105,33 @@ export const getDoctorAvailabilityDashboard =
             data: result
         });
     });
+
+export const getAdminEarningsReport = asyncHandler(
+    async (req: Request, res: Response) => {
+        const period = typeof req.query.period === "string"
+            ? req.query.period
+            : "year";
+
+        const result = await dashboardService.getAdminEarningsReport(period);
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }
+);
+
+export const getAdminDashboardOverview = asyncHandler(
+    async (req: Request, res: Response) => {
+
+        const year = req.query.year
+            ? Number(req.query.year)
+            : new Date().getFullYear();
+
+        const result = await dashboardService.getAdminDashboardOverview(year);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    }
+);
