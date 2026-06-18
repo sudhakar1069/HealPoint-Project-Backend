@@ -1,15 +1,14 @@
-import { Op } from "sequelize";
-import Doctor from "../../models/doctorModel.js";
-import { User } from "../../models/userModel.js";
-import type { DoctorCreationAttributes } from "../../models/doctorModel.js"
-import type { userCreationAttributes } from "../../models/userModel.js";
+import { Op, Transaction } from "sequelize";
+import Doctor, { type DoctorCreationAttributes } from "../../models/doctorModel.js";
+import User, { type userCreationAttributes } from "../../models/userModel.js";
+
 
 export class DoctorRepository {
-    async createUser(data: userCreationAttributes, transaction: any) {
+    async createUser(data: userCreationAttributes, transaction: Transaction) {
         return await User.create(data, { transaction });
     }
 
-    async createDoctor(data: DoctorCreationAttributes, transaction: any) {
+    async createDoctor(data: DoctorCreationAttributes, transaction: Transaction) {
         return await Doctor.create(data, { transaction });
     }
 
@@ -120,7 +119,7 @@ export class DoctorRepository {
         });
     }
 
-    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: any = null) {
+    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: Transaction | null = null) {
         return await User.update(data,
             {
                 where: { id: userId }, transaction
@@ -128,18 +127,18 @@ export class DoctorRepository {
         );
     }
 
-    async updateDoctor(doctorId: number, data: Partial<DoctorCreationAttributes>, transaction: any) {
+    async updateDoctor(doctorId: number, data: Partial<DoctorCreationAttributes>, transaction: Transaction) {
         return await Doctor.update(data,
             { where: { id: doctorId }, transaction }
         );
     }
 
-    async deleteDoctor(doctorId: number, transaction: any) {
+    async deleteDoctor(doctorId: number, transaction: Transaction) {
         return await Doctor.destroy({
             where: { id: doctorId }, transaction
         });
     }
-    async deleteUser(userId: number, transaction: any) {
+    async deleteUser(userId: number, transaction: Transaction) {
         return await User.destroy({
             where: { id: userId }, transaction
         });

@@ -1,13 +1,15 @@
 import { Op } from "sequelize";
-import Appointment from "../../models/appointmentModel.js";
+import Appointment, { type AppointmentCreationAttributes } from "../../models/appointmentModel.js";
 import Doctor from "../../models/doctorModel.js";
 import Patient from "../../models/patientModel.js";
 import { User } from "../../models/userModel.js";
 import Payment from "../../models/paymentModel.js";
 import type { AppointmentStatus } from "../../types/appointmentStatus.js";
+import { getDateRangeFilter } from "../../utils/dateFilter.js";
+
 
 export class AppointmentRepository {
-    async createAppointment(data: any) {
+    async createAppointment(data: AppointmentCreationAttributes) {
         return await Appointment.create(data);
     }
 
@@ -47,29 +49,10 @@ export class AppointmentRepository {
             appointmentWhere.status = consultationStatus;
         }
 
-        if (month && year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, month - 1, 1),
-                    new Date(year, month, 0)
-                ]
-            };
-        } else if (year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, 0, 1),
-                    new Date(year, 11, 31)
-                ]
-            };
-        } else if (month) {
-            const currentYear = new Date().getFullYear();
+        const dateFilter = getDateRangeFilter(month, year);
 
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(currentYear, month - 1, 1),
-                    new Date(currentYear, month, 0)
-                ]
-            };
+        if (dateFilter) {
+            appointmentWhere.appointment_date = dateFilter;
         }
 
         return await Appointment.findAndCountAll({
@@ -179,29 +162,10 @@ export class AppointmentRepository {
             }
         }
 
-        if (month && year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, month - 1, 1),
-                    new Date(year, month, 0)
-                ]
-            };
-        } else if (year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, 0, 1),
-                    new Date(year, 11, 31)
-                ]
-            };
-        } else if (month) {
-            const currentYear = new Date().getFullYear();
+       const dateFilter = getDateRangeFilter(month, year);
 
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(currentYear, month - 1, 1),
-                    new Date(currentYear, month, 0)
-                ]
-            };
+        if (dateFilter) {
+            appointmentWhere.appointment_date = dateFilter;
         }
 
         return await Appointment.findAndCountAll({
@@ -276,29 +240,10 @@ export class AppointmentRepository {
             }
         }
 
-        if (month && year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, month - 1, 1),
-                    new Date(year, month, 0)
-                ]
-            };
-        } else if (year) {
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(year, 0, 1),
-                    new Date(year, 11, 31)
-                ]
-            };
-        } else if (month) {
-            const currentYear = new Date().getFullYear();
+        const dateFilter = getDateRangeFilter(month, year);
 
-            appointmentWhere.appointment_date = {
-                [Op.between]: [
-                    new Date(currentYear, month - 1, 1),
-                    new Date(currentYear, month, 0)
-                ]
-            };
+        if (dateFilter) {
+            appointmentWhere.appointment_date = dateFilter;
         }
 
         return await Appointment.findAndCountAll({
@@ -377,20 +322,14 @@ export class AppointmentRepository {
         });
     }
 
-    async updateAppointmentStatus(
-        appointmentId: number,
-        status: AppointmentStatus
-    ) {
+    async updateAppointmentStatus(appointmentId: number, status: AppointmentStatus) {
         return await Appointment.update(
             { status },
             { where: { id: appointmentId } }
         );
     }
 
-    async updateMeetingDetails(
-        appointmentId: number,
-        meetingRoom: string
-    ) {
+    async updateMeetingDetails(appointmentId: number, meetingRoom: string) {
         return await Appointment.update(
             {
                 meeting_room: meetingRoom,
@@ -475,7 +414,6 @@ export class AppointmentRepository {
 
     async markMissedConsultations() {
         const now = new Date();
-
         const appointments = await Appointment.findAll({
             where: {
                 status: "confirmed",

@@ -1,7 +1,7 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-interface AppointmentAttributes {
+export interface AppointmentAttributes {
     id?: number;
     doctor_id: number;
     patient_id: number;
@@ -20,7 +20,7 @@ interface AppointmentAttributes {
     reminder_sent?: boolean;
 }
 
-interface AppointmentCreationAttributes
+export interface AppointmentCreationAttributes
     extends Optional<AppointmentAttributes, "id" | "status" | "payment_expires_at"> { }
 
 class Appointment extends Model<

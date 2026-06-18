@@ -6,11 +6,8 @@ import { NotificationRepository } from "../notifications/notificationRepository.
 import { NotificationService } from "../notifications/notificationService.js";
 
 const doctorRepository = new DoctorRepository();
-
 const notificationRepository = new NotificationRepository();
-const notificationService = new NotificationService(
-    notificationRepository
-);
+const notificationService = new NotificationService(   notificationRepository);
 
 const doctorService = new DoctorService(
     doctorRepository,

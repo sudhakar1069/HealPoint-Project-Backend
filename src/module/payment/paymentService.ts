@@ -51,9 +51,7 @@ export class PaymentService {
             throw new Error("Payment already initiated");
         }
 
-        const doctor = await this.doctorRepository.getDoctorById(
-            appointment.doctor_id
-        );
+        const doctor = await this.doctorRepository.getDoctorById(appointment.doctor_id);
 
         if (!doctor) {
             throw new Error("Doctor not found");
@@ -134,8 +132,8 @@ export class PaymentService {
 
         await this.appointmentRepository.clearPaymentExpiry(payment.appointment_id);
 
-        const updatedAppointment: any =
-            await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
+        // const updatedAppointment: any =
+        //     await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
 
         // if (updatedAppointment) {
         //     try {
@@ -157,29 +155,32 @@ export class PaymentService {
             appointment_id: payment.appointment_id
         };
     }
+
     async expirePendingPayments() {
         const expiredAppointments =
             await this.appointmentRepository.getExpiredPendingAppointments();
 
         for (const appointment of expiredAppointments) {
-            const payment = await this.paymentRepository.getByAppointmentId(
-                appointment.id
-            );
+            const payment = await this.paymentRepository.getByAppointmentId(appointment.id);
 
             if (payment) {
-                await this.paymentRepository.updatePaymentFailed(
-                    payment.razorpay_order_id
-                );
+                await this.paymentRepository.updatePaymentFailed(payment.razorpay_order_id);
             }
 
-            await this.appointmentRepository.cancelAppointment(
-                appointment.id
-            );
+            await this.appointmentRepository.cancelAppointment(appointment.id);
 
-            await this.appointmentRepository.clearPaymentExpiry(
-                appointment.id
-            );
+            await this.appointmentRepository.clearPaymentExpiry(appointment.id);
         }
         return { success: true };
+    }
+
+    async getPaymentByAppointment(appointmentId: number) {
+        const payment = await this.paymentRepository.getByAppointmentId(appointmentId);
+
+        if (!payment) {
+            throw new Error("Payment not found");
+        }
+
+        return payment;
     }
 }

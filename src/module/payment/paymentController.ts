@@ -17,7 +17,7 @@ const paymentService = new PaymentService(
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
     const patientId = req.user!.profile_id;
-    const appointment_id = req.body.appointment_id ?? req.body.appointmentId;
+    const appointment_id = req.body.appointment_id
     const order = await paymentService.createOrder(patientId, appointment_id);
 
     return res.status(200).json({
@@ -35,23 +35,18 @@ export const verifyPayment = asyncHandler(async (req: Request, res: Response) =>
 });
 
 
-export const getPaymentByAppointment =
-    asyncHandler(async (req: Request, res: Response) => {
+export const getPaymentByAppointment = asyncHandler(async (req: Request, res: Response) => {
 
-        const payment = await paymentRepository
-            .getByAppointmentId(Number(req.params.appointmentId));
+    const payment = await paymentService.getPaymentByAppointment(
+        Number(req.params.appointmentId)
+    );
 
-        if (!payment) {
-            return res.status(404).json({
-                success: false,
-                message: "Payment not found"
-            });
-        }
-        return res.status(200).json({
-            success: true,
-            payment,
-        });
+    return res.status(200).json({
+        success: true,
+        payment
     });
+}
+);
 
 
 

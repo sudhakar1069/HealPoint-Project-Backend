@@ -1,7 +1,6 @@
-
-import Patient from "../../models/patientModel.js";
-import { User } from "../../models/userModel.js";
-import { Op } from "sequelize";
+import Patient, { type PatientCreationAttributes } from "../../models/patientModel.js";
+import User, { type userCreationAttributes } from "../../models/userModel.js";
+import { Op, Transaction } from "sequelize";
 
 export class PatientRepository {
     async getAllPatients(page: number, limit: number, filters: any) {
@@ -92,28 +91,28 @@ export class PatientRepository {
         });
     }
 
-    async updateUser(userId: number, data: any, transaction: any = null) {
+    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: Transaction) {
         return await User.update(data, {
             where: { id: userId },
             transaction
         });
     }
 
-    async updatePatient(patientId: number, data: any, transaction: any) {
+    async updatePatient(patientId: number, data:Partial<PatientCreationAttributes>, transaction: Transaction) {
         return await Patient.update(data, {
             where: { id: patientId },
             transaction
         });
     }
 
-    async deletePatient(id: number, transaction: any) {
+    async deletePatient(id: number, transaction: Transaction) {
         return await Patient.destroy({
             where: { id },
             transaction
         });
     }
 
-    async deleteUser(userId: number, transaction: any) {
+    async deleteUser(userId: number, transaction: Transaction) {
         return await User.destroy({
             where: { id: userId },
             transaction

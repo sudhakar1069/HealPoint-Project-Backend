@@ -67,13 +67,6 @@ export class PaymentRepository {
             raw: true
         });
 
-        return Number(
-            result?.totalEarnings || 0
-        );
+        return Number(result?.totalEarnings || 0);
     }
-    // async getPendingCreatedPayments() {
-    //     return await Payment.findAll({
-    //         where: { status: "created" },
-    //     });
-    // }
 }
