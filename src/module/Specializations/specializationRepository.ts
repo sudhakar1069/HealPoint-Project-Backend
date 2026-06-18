@@ -11,7 +11,7 @@ export class SpecializationRepository {
         const offset = (page - 1) * limit;
         const whereCondition: any = {};
         if (search) {
-            whereCondition.name = { [Op.like]: `%${search}%`, };
+            whereCondition.name = { [Op.like]: `%${search}%`};
         }
         const result = await Specialization.findAndCountAll({
             where: whereCondition,
@@ -47,7 +47,6 @@ export class SpecializationRepository {
         if (!specialization) {
             return null;
         }
-
         const doctorCount = await Doctor.count({
             where: {
                 specialization: specialization.name,

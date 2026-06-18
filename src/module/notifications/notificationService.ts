@@ -7,7 +7,7 @@ export class NotificationService {
     async addDoctorNotification(doctorName: string,specialization:string) {
         return await this.notificationRepository.createNotification({
             title: "New Doctor Added",
-            message: `Dr. ${doctorName} - ${specialization} joined HealPoint. Book appointment now.`,
+            message: `Dr. ${doctorName} - ${specialization} joined HealPoint.`,
             type: "doctor",
         });
     }

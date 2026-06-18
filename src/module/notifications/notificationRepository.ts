@@ -1,4 +1,3 @@
-
 import { Notification, type NotificationCreationAttributes }
     from "../../models/notificationModel.js";
 

@@ -1,10 +1,7 @@
 import type { Request, Response } from "express";
-
 import { asyncHandler } from "../../middleware/asyncHandler.js";
-
 import { EarningsRepository } from "./earningRepository.js";
 import { EarningsService } from "./earningService.js";
-
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 
 const earningsRepository = new EarningsRepository();
@@ -31,14 +28,8 @@ export const getPaymentHistory = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorId = req.user!.profile_id;
 
-        const page = req.query.page
-            ? Number(req.query.page)
-            : 1;
-
-        const limit = req.query.limit
-            ? Number(req.query.limit)
-            : 10;
-
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
         const date = req.query.date as string | undefined;
 
         const result = await earningsService.getPaymentHistory(

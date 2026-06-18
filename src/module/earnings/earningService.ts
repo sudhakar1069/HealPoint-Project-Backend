@@ -74,6 +74,7 @@ export class EarningsService {
 
         const payments = await this.earningsRepository.getDoctorPaidPayments(doctorId);
         const monthlyMap: Record<string, number> = {};
+
         for (const payment of payments as any[]) {
 
             const date = new Date(payment.created_at);
@@ -82,14 +83,14 @@ export class EarningsService {
 
             monthlyMap[month] = (monthlyMap[month] || 0) + Number(payment.amount);
         }
+        const monthly = [];
 
-        return {
-            monthly: Object.entries(monthlyMap).map(
-                ([month, earnings]) => ({
-                    month,
-                    earnings
-                })
-            )
-        };
+        for (const month in monthlyMap) {
+            monthly.push({
+                month,
+                earnings: monthlyMap[month]
+            });
+        }
+        return { monthly };
     }
 }

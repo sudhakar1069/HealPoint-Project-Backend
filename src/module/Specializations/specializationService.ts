@@ -1,4 +1,4 @@
-import { SpecializationRepository } from "./departmentRepository.js";
+import { SpecializationRepository } from "./specializationRepository.js";
 import type { CreateSpecializationDTO, UpdateSpecializationDTO }
     from "../../types/specializationDto.js";
 import { NotificationService } from "../notifications/notificationService.js";

@@ -91,14 +91,14 @@ export class PatientRepository {
         });
     }
 
-    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: Transaction) {
+    async updateUser(userId: number, data: Partial<userCreationAttributes>, transaction: Transaction | null = null) {
         return await User.update(data, {
             where: { id: userId },
             transaction
         });
     }
 
-    async updatePatient(patientId: number, data:Partial<PatientCreationAttributes>, transaction: Transaction) {
+    async updatePatient(patientId: number, data: Partial<PatientCreationAttributes>, transaction: Transaction) {
         return await Patient.update(data, {
             where: { id: patientId },
             transaction

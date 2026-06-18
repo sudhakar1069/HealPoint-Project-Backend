@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../middleware/asyncHandler.js";
 
-import { SpecializationRepository } from "./departmentRepository.js";
+import { SpecializationRepository } from "./specializationRepository.js";
 import { SpecializationService } from "./specializationService.js";
 import { NotificationRepository } from "../notifications/notificationRepository.js";
 import { NotificationService } from "../notifications/notificationService.js";

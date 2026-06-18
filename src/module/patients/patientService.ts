@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { sequelize } from "../../config/db.js";
 import { PatientRepository } from "./patientRepository.js";
+import type { CreatePatientDTO } from "../../types/patientDto.js";
 
 export class PatientService {
     constructor(private patientRepository: PatientRepository) { }
@@ -39,7 +40,7 @@ export class PatientService {
         return patient;
     }
 
-    async updatePatient(id: number, data: any) {
+    async updatePatient(id: number, data: Partial<CreatePatientDTO>) {
         const transaction = await sequelize.transaction();
         try {
             const existingPatient = await this.patientRepository.getPatientById(id);
@@ -54,13 +55,16 @@ export class PatientService {
                 data.gender
             ) {
 
-                await this.patientRepository.updateUser(existingPatient.user_id,
-                    {
-                        name: data.name,
-                        phone_number: data.phone_number,
-                        email: data.email,
-                        gender: data.gender,
-                    },
+                const userData: any = {};
+
+                if (data.name !== undefined) userData.name = data.name;
+                if (data.phone_number !== undefined) userData.phone_number = data.phone_number;
+                if (data.email !== undefined) userData.email = data.email;
+                if (data.gender !== undefined) userData.gender = data.gender;
+
+                await this.patientRepository.updateUser(
+                    existingPatient.user_id,
+                    userData,
                     transaction
                 );
             }
@@ -75,15 +79,19 @@ export class PatientService {
                 );
             }
 
-            await this.patientRepository.updatePatient(id,
-                {
-                    dob: data.dob,
-                    age: data.age,
-                    blood_group: data.blood_group,
-                    address: data.address,
-                },
+            const patientData: any = {};
+
+            if (data.dob !== undefined) patientData.dob = data.dob;
+            if (data.age !== undefined) patientData.age = data.age;
+            if (data.blood_group !== undefined) patientData.blood_group = data.blood_group;
+            if (data.address !== undefined) patientData.address = data.address;
+
+            await this.patientRepository.updatePatient(
+                id,
+                patientData,
                 transaction
             );
+
             await transaction.commit();
             const updatedPatient = await this.patientRepository.getPatientById(id)
             return { patient: updatedPatient };

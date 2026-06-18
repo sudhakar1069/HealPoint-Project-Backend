@@ -69,18 +69,8 @@ export class EarningsRepository {
     async getMonthlyEarnings(doctorId: number) {
         return await Payment.findAll({
             attributes: [
-                [
-                    fn(
-                        "DATE_FORMAT",
-                        col("Payment.created_at"),
-                        "%b"
-                    ),
-                    "month"
-                ],
-                [
-                    fn("SUM", col("amount")),
-                    "earnings"
-                ]
+                [fn("DATE_FORMAT", col("Payment.created_at"), "%b"), "month"],
+                [fn("SUM", col("amount")), "earnings"]
             ],
             where: { status: "paid" },
             include: [
