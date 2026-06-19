@@ -132,23 +132,23 @@ export class PaymentService {
 
         await this.appointmentRepository.clearPaymentExpiry(payment.appointment_id);
 
-        // const updatedAppointment: any =
-        //     await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
+        const updatedAppointment: any =
+            await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
 
-        // if (updatedAppointment) {
-        //     try {
-        //         await this.emailService.sendAppointmentConfirmationEmail(
-        //             updatedAppointment.patient.user.email,
-        //             updatedAppointment.patient.user.name,
-        //             updatedAppointment.doctor.user.name,
-        //             updatedAppointment.appointment_date,
-        //             updatedAppointment.start_time,
-        //             updatedAppointment.consultation_type
-        //         );
-        //     } catch (error) {
-        //         console.error("Email sending failed:", error);
-        //     }
-        // }
+        if (updatedAppointment) {
+            try {
+                await this.emailService.sendAppointmentConfirmationEmail(
+                    updatedAppointment.patient.user.email,
+                    updatedAppointment.patient.user.name,
+                    updatedAppointment.doctor.user.name,
+                    updatedAppointment.appointment_date,
+                    updatedAppointment.start_time,
+                    updatedAppointment.consultation_type
+                );
+            } catch (error) {
+                console.error("Email sending failed:", error);
+            }
+        }
 
         return {
             success: true,

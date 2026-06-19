@@ -37,11 +37,11 @@ export class AuthService {
             address: null
         });
 
-        // try {
-        //     await this.emailService.sendWelcomeEmail(user.email, user.name);
-        // } catch (error) {
-        //     console.error("Welcome email failed:", error);
-        // }
+        try {
+            await this.emailService.sendWelcomeEmail(user.email, user.name);
+        } catch (error) {
+            console.error("Welcome email failed:", error);
+        }
         return user;
     }
 

@@ -1,55 +1,53 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-} as any);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export class EmailService {
-    async sendWelcomeEmail(email: string, name: string) {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Welcome to HealPoint",
-            html: `
-            <h2>
-                Welcome to HealPoint, ${name}!
-            </h2>
-
-            <p>
-                Your account has been created successfully.
-            </p>
-
-            <p>
-                You can now log in and book appointments with doctors.
-            </p>
-
-            <p>
-                Thank you for choosing HealPoint.
-            </p>
-        `
+    private async sendEmail(
+        to: string,
+        subject: string,
+        html: string
+    ) {
+        const { error } = await resend.emails.send({
+            from: process.env.EMAIL_FROM!,
+            to,
+            subject,
+            html,
         });
+
+        if (error) {
+            throw new Error(error.message);
+        }
+    }
+
+    async sendWelcomeEmail(email: string, name: string) {
+        await this.sendEmail(
+            email,
+            "Welcome to HealPoint",
+            `
+            <h2>Welcome to HealPoint, ${name}!</h2>
+
+            <p>Your account has been created successfully.</p>
+
+            <p>You can now log in and book appointments with doctors.</p>
+
+            <p>Thank you for choosing HealPoint.</p>
+            `
+        );
     }
 
     async sendPasswordResetOtp(email: string, otp: string) {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Password Reset OTP",
-            html: `
+        await this.sendEmail(
+            email,
+            "Password Reset OTP",
+            `
             <h2>Password Reset OTP</h2>
+
             <h1>${otp}</h1>
+
             <p>Expires in 15 minutes</p>
-        `
-        });
+            `
+        );
     }
 
     async sendAppointmentConfirmationEmail(
@@ -60,22 +58,15 @@ export class EmailService {
         appointmentTime: string,
         consultationType: string,
     ) {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Appointment Confirmed",
-            html: `
-            <h2>
-                Appointment Confirmed!!!
-            </h2>
+        await this.sendEmail(
+            email,
+            "Appointment Confirmed",
+            `
+            <h2>Appointment Confirmed!!!</h2>
 
-            <p>
-                Hello ${patientName},
-            </p>
+            <p>Hello ${patientName},</p>
 
-            <p>
-                Your appointment has been successfully booked.
-            </p>
+            <p>Your appointment has been successfully booked.</p>
 
             <table
                 border="1"
@@ -102,18 +93,13 @@ export class EmailService {
                     <td><strong>Consultation Type</strong></td>
                     <td>${consultationType}</td>
                 </tr>
-
             </table>
 
-            <p>
-                You can join 10 min before your scheduled time!
-            </p>
+            <p>You can join 10 minutes before your scheduled time!</p>
 
-            <p>
-                Thank you for choosing HealPoint.
-            </p>
-        `
-        });
+            <p>Thank you for choosing HealPoint.</p>
+            `
+        );
     }
 
     async sendAppointmentReminderEmail(
@@ -124,11 +110,10 @@ export class EmailService {
         appointmentTime: string,
         meetingRoom: string
     ) {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Appointment Reminder - Starts in 10 Minutes",
-            html: `
+        await this.sendEmail(
+            email,
+            "Appointment Reminder - Starts in 10 Minutes",
+            `
             <h2>Appointment Reminder</h2>
 
             <p>Hello ${patientName},</p>
@@ -166,7 +151,7 @@ export class EmailService {
             </table>
 
             <p>Please join on time.</p>
-        `
-        });
+            `
+        );
     }
 }
