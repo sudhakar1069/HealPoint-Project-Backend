@@ -1,7 +1,7 @@
 import express from "express";
 
 import {
-    getDashboardSummary,
+    getDoctorDashboardSummary,
     getTodayAppointmentsForDashboard,
     getWeeklyLoadForDashboard,
     getMonthlyOverviewForDashboard,
@@ -20,7 +20,7 @@ router.get(
     "/doctor/dashboard/summary",
     authenticate,
     authorize("doctor"),
-    getDashboardSummary
+    getDoctorDashboardSummary
 );
 
 router.get(

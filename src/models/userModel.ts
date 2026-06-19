@@ -36,7 +36,6 @@ export class User extends Model<userAttributes, userCreationAttributes>
     declare phone_number: string;
     declare email: string;
     declare profile_picture?: string | null;
-    declare dob: string;
     declare gender: "Male" | "Female" | "Others";
     declare role: "admin" | "doctor" | "patient";
     declare password: string;

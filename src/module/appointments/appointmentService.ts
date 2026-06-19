@@ -4,6 +4,7 @@ import { PatientRepository } from "../patients/patientRepository.js";
 import { SlotService } from "../slots/slotService.js";
 import { PaymentRepository } from "../payment/paymentRepository.js";
 import { EmailService } from "../../utils/emailService.js";
+import type { BookAppointmentDto } from "../../types/bookAppointmentDto.js";
 
 export class AppointmentService {
     constructor(
@@ -24,7 +25,7 @@ export class AppointmentService {
         };
     }
 
-    async bookAppointment(patientId: number, data: any) {
+    async bookAppointment(patientId: number, data: BookAppointmentDto) {
         const {
             doctor_id,
             appointment_date,
@@ -458,6 +459,7 @@ export class AppointmentService {
     async sendUpcomingAppointmentReminders() {
 
         const appointments = await this.appointmentRepository.getAppointmentsForReminder();
+         console.log("Appointments found:", appointments.length);
         const now = new Date();
         for (const appointment of appointments as any[]) {
 
@@ -466,8 +468,8 @@ export class AppointmentService {
             );
 
             const diffMinutes = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60);
-
-            if (diffMinutes <= 10 && diffMinutes > 8) {
+  console.log("Diff minutes:", diffMinutes);
+            if (diffMinutes <= 10 && diffMinutes > 0) {
                 try {
                     await this.emailService.sendAppointmentReminderEmail(
                         appointment.patient.user.email,

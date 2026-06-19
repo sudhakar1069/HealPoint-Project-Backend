@@ -17,10 +17,6 @@ export const unavailabilityOwnership = async (
 
         const { id: loggedInUserId, role } = req.user;
 
-        if (role === "admin") {
-            return next();
-        }
-
         if (role !== "doctor") {
             return res.status(403).json({
                 success: false,

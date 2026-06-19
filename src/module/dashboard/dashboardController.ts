@@ -18,10 +18,10 @@ const dashboardService = new DashboardService(
     reviewRepository
 );
 
-export const getDashboardSummary = asyncHandler(
+export const getDoctorDashboardSummary = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorUserId = req.user!.id;
-        const result = await dashboardService.getDashboardSummary(doctorUserId);
+        const result = await dashboardService.getDoctorDashboardSummary(doctorUserId);
 
         res.status(200).json({
             success: true,

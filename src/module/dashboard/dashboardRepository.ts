@@ -78,20 +78,8 @@ export class DashboardRepository {
 
         return await Appointment.findAll({
             attributes: [
-                [
-                    fn(
-                        "DAYNAME",
-                        col("appointment_date")
-                    ),
-                    "day"
-                ],
-                [
-                    fn(
-                        "COUNT",
-                        col("id")
-                    ),
-                    "appointments"
-                ]
+                [fn("DAYNAME", col("appointment_date")), "day"],
+                [fn("COUNT", col("id")), "appointments"]
             ],
             where: {
                 doctor_id: doctorId,
@@ -108,15 +96,13 @@ export class DashboardRepository {
                     ]
                 }
             },
-            group: [
-                fn("DAYNAME", col("appointment_date"))
-            ],
+            group: [fn("DAYNAME", col("appointment_date"))],
             raw: true
         });
     }
 
     async getMonthlyOverview(doctorId: number, year: number) {
-        return await Appointment.findAll({
+        return await Appointment.findAll({  
             attributes: [
                 [fn("MONTH", col("appointment_date")), "month"],
                 [fn("COUNT", col("id")), "appointments"],
@@ -187,8 +173,7 @@ export class DashboardRepository {
 
         return payments.reduce(
             (sum: number, payment: any) =>
-                sum + Number(payment.amount),
-            0
+                sum + Number(payment.amount), 0
         );
     }
 

@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
+import SpecialAvailability from "../models/specialAvailabilityModel.js";
 
-import DoctorAvailability from "../models/availabilityModel.js";
-
-export const availabilityOwnership = async (
+export const specialAvailabilityOwnership = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -20,33 +19,35 @@ export const availabilityOwnership = async (
         if (role !== "doctor") {
             return res.status(403).json({
                 success: false,
-                message: "Only doctors can modify availability"
+                message: "Only doctors can modify special availability"
             });
         }
 
-        const availabilityId = Number(req.params.id);
-        const availability = await DoctorAvailability.findByPk(
-            availabilityId,
+        const specialAvailabilityId = Number(req.params.id);
+
+        const specialAvailability = await SpecialAvailability.findByPk(
+            specialAvailabilityId,
             {
                 include: ["doctor"]
             }
         );
 
-        if (!availability) {
+        if (!specialAvailability) {
             return res.status(404).json({
                 success: false,
-                message: "Availability not found"
+                message: "Special availability not found"
             });
         }
-        const doctor = availability.doctor;
-        if (
-            !doctor || doctor.user_id !== loggedInUserId
-        ) {
+
+        const doctor = specialAvailability.doctor;
+
+        if (!doctor || doctor.user_id !== loggedInUserId) {
             return res.status(403).json({
                 success: false,
-                message: "You can modify only your own availability"
+                message: "You can modify only your own special availability"
             });
         }
+
         next();
 
     } catch (error) {

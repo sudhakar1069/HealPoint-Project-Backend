@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 interface JwtPayload {
     id: number;
-    role?: "doctor" | "patient" ;
+    role?: "doctor" | "patient" | "admin";
     profile_id?: number | null;
 }
 

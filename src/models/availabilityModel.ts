@@ -33,7 +33,7 @@ class DoctorAvailability extends Model<
     declare break_start: number;
     declare break_end: number;
     declare is_active: boolean;
-    declare doctor: Doctor;
+    declare doctor?: Doctor;
 }
 
 DoctorAvailability.init(

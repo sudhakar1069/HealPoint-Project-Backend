@@ -439,7 +439,6 @@ export class AppointmentRepository {
             where: {
                 status: "confirmed",
                 consultation_status: "scheduled",
-                consultation_type: "online",
                 reminder_sent: false
             },
             include: [

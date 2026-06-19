@@ -4,9 +4,10 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RegisterDTO } from "../../types/registerDto.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/tokens.js";
 import { EmailService } from "../../utils/emailService.js";
+import type { UserRepository } from "./authRepository.js";
 
 export class AuthService {
-    constructor(private userRepository: any) { }
+    constructor(private userRepository: UserRepository) { }
     private emailService = new EmailService();
 
     async register(data: RegisterDTO) {
@@ -52,16 +53,16 @@ export class AuthService {
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) throw { status: 401, message: "Invalid password" };
 
-        let profileId = null;
+        let profileId: number | null = null;
 
         if (user.role === "doctor") {
             const doctor = await this.userRepository.findDoctorByUserId(user.id);
-            profileId = doctor?.id;
+            profileId = doctor?.id ?? null;
         }
 
         if (user.role === "patient") {
             const patient = await this.userRepository.findPatientByUserId(user.id);
-            profileId = patient?.id;
+            profileId = patient?.id ?? null;
         }
 
         await this.userRepository.updatePatientStatus(user.id, true);
@@ -100,10 +101,22 @@ export class AuthService {
             const user = await this.userRepository.findByRefreshToken(refreshToken);
             if (!user) throw { status: 401, message: "Invalid refresh token" };
 
+            let profileId: number | null = null;
+
+            if (user.role === "doctor") {
+                const doctor = await this.userRepository.findDoctorByUserId(user.id);
+                profileId = doctor?.id ?? null;
+            }
+
+            if (user.role === "patient") {
+                const patient = await this.userRepository.findPatientByUserId(user.id);
+                profileId = patient?.id ?? null;
+            }
+
             const accessToken = generateAccessToken({
                 id: decoded.id,
                 role: user.role,
-                profile_id: user.profile_id
+                profile_id: profileId
             });
 
             return { success: true, accessToken };

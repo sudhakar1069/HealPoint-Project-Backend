@@ -1,5 +1,6 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
+import type Doctor from "./doctorModel.js";
 export interface SpecialAvailabilityAttributes {
     id?: number;
     doctor_id: number;
@@ -30,6 +31,7 @@ class SpecialAvailability extends Model<
     declare slot_duration: number;
     declare is_available: boolean;
     declare notes: string | null;
+    declare doctor?: Doctor;
 }
 
 SpecialAvailability.init(

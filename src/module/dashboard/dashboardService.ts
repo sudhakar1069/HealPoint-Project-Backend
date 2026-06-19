@@ -11,7 +11,7 @@ export class DashboardService {
         private reviewRepository: ReviewRepository
     ) { }
 
-    async getDashboardSummary(doctorUserId: number) {
+    async getDoctorDashboardSummary(doctorUserId: number) {
         const doctor = await this.doctorRepository.getDoctorByUserId(doctorUserId);
 
         if (!doctor) {

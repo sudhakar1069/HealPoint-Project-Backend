@@ -76,27 +76,7 @@ export class DoctorAvailabilityService {
         const endTime = data.end_time || availability.end_time;
 
         if (startTime >= endTime)
-            throw new Error("Start time must be less than end time");
-
-        const existingAvailabilities =
-            await this.doctoravailabilityRepository.getAvailabilityByDoctorAndDay(
-                doctorId,
-                data.day_of_week || availability.day_of_week
-            );
-
-        for (const existing of existingAvailabilities) {
-            if (existing.id === availabilityId) continue;
-
-            const isOverlapping = this.isTimeOverlapping(
-                startTime,
-                endTime,
-                existing.start_time,
-                existing.end_time
-            );
-
-            if (isOverlapping)
-                throw new Error("Availability timing overlaps with existing availability");
-        }
+            throw new Error("Start time must be less than end time")
 
         return await this.doctoravailabilityRepository.updateAvailability(
             availabilityId,

@@ -26,7 +26,7 @@ export const startConsultationExpiryJob = () => {
     cron.schedule("* * * * *", async () => {
         try {
             await appointmentService.expireMissedConsultations();
-            // console.log("[CONSULTATION EXPIRY JOB] checked");
+            console.log("[CONSULTATION EXPIRY JOB] checked");
 
         } catch (error) {
             console.error("[CONSULTATION EXPIRY JOB ERROR]", error

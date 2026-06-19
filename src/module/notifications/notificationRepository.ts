@@ -29,21 +29,4 @@ export class NotificationRepository {
             { where: { is_read: false, }, }
         );
     }
-
-    async findUnreadNotifications() {
-        return await Notification.findAll({
-            where: { is_read: false, },
-            order: [["created_at", "DESC"]],
-        });
-    }
-
-    async findById(id: number) {
-        return await Notification.findByPk(id);
-    }
-
-    async delete(id: number) {
-        return await Notification.destroy({
-            where: { id },
-        });
-    }
 }

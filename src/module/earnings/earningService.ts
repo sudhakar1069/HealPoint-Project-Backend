@@ -1,7 +1,16 @@
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { EarningsRepository } from "./earningRepository.js";
-
+interface PaymentData {
+    id: number;
+    amount: number;
+    status: string;
+    appointment?: {
+        id: number;
+        status: string;
+    };
+}
 export class EarningsService {
+
 
     constructor(
         private earningsRepository: EarningsRepository,
@@ -14,12 +23,12 @@ export class EarningsService {
         if (!doctor)
             throw new Error("Doctor not found");
 
-        const payments = await this.earningsRepository.getDoctorPaidPayments(doctorId);
+        const payments: PaymentData[] = await this.earningsRepository.getDoctorPaidPayments(doctorId);
 
         let totalEarnings = 0;
         let completedAppointments = 0;
 
-        for (const payment of payments as any[]) {
+        for (const payment of payments) {
             const amount = Number(payment.amount);
             totalEarnings += amount;
 

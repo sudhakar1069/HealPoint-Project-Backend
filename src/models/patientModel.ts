@@ -4,15 +4,15 @@ import { sequelize } from "../config/db.js";
 export interface PatientAttributes {
     id?: number;
     user_id: number;
-    dob?: string;
-    age: number;
+    dob?: string | null;
+    age: number | null;
     is_active: boolean;
-    blood_group: string;
-    address: string;
+    blood_group: string | null;
+    address: string | null;
 }
 
 export interface PatientCreationAttributes
-    extends Optional<PatientAttributes, "id" | "dob"|"is_active"> { }
+    extends Optional<PatientAttributes, "id" | "dob" | "is_active"> { }
 
 export class Patient
     extends Model<PatientAttributes, PatientCreationAttributes>
@@ -20,11 +20,11 @@ export class Patient
 
     declare id: number;
     declare user_id: number;
-    declare dob: string;
-    declare age: number;
+    declare dob: string | null;
+    declare age: number | null;
     declare is_active: boolean;
-    declare blood_group: string;
-    declare address: string;
+    declare blood_group: string | null;
+    declare address: string | null;
 }
 
 Patient.init(
@@ -54,7 +54,7 @@ Patient.init(
         is_active: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue:false
+            defaultValue: false
         },
 
         blood_group: {
