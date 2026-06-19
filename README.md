@@ -1,8 +1,8 @@
 # HealPoint API
 
-A scalable healthcare appointment management backend built with **Node.js**, **TypeScript**, **Express**, **Sequelize**, and **MySQL**.
+A healthcare appointment management backend built with **Node.js**, **TypeScript**, **Express**, **Sequelize**, and **MySQL**.
 
-HealPoint enables patients to book appointments with doctors, manage availability schedules, process payments, receive notifications, and conduct online consultations.
+HealPoint enables patients to book appointments with doctors, manage availability and special availability, process Razorpay payments, send notifications, and manage consultations.
 
 ---
 
@@ -10,52 +10,50 @@ HealPoint enables patients to book appointments with doctors, manage availabilit
 
 ### Authentication & Authorization
 - ✅ JWT-based authentication
-- ✅ Token refresh and logout
-- ✅ Role-based access control (admin, doctor, patient)
-- ✅ Password reset flow with OTP verification
+- ✅ Refresh token support
+- ✅ Role-based access control for `admin`, `doctor`, and `patient`
+- ✅ Password reset via OTP email
 
 ### Doctor Management
 - ✅ Create and manage doctor profiles
-- ✅ Upload doctor profile photos
-- ✅ Assign departments / specializations
-- ✅ Doctor profile and image updates
+- ✅ Upload profile images via Cloudinary
+- ✅ Assign departments and specializations
+- ✅ Manage doctor availability and unavailability
 
 ### Patient Management
-- ✅ Patient profile management
+- ✅ Patient registration and profile updates
 - ✅ Profile image uploads
-- ✅ Appointment history tracking
-- ✅ Patient profile updates and ownership checks
+- ✅ Appointment history access
+- ✅ Patient ownership validation
 
 ### Appointment Scheduling
-- ✅ Appointment booking system
-- ✅ Appointment status tracking
+- ✅ Appointment booking and status tracking
 - ✅ Consultation lifecycle management
-- ✅ Consultation expiry job support
+- ✅ Appointment reminder emails
+- ✅ Consultation expiry processing
 
 ### Availability Management
 - ✅ Weekly availability schedules
-- ✅ Special availability slots
-- ✅ Unavailability scheduling
+- ✅ Special availability time slots
+- ✅ Doctor unavailability handling
 - ✅ Dynamic slot generation
 
 ### Payment Processing
-- ✅ Razorpay integration
-- ✅ Order creation and verification
-- ✅ Payment record retrieval
+- ✅ Razorpay order creation and verification
+- ✅ Payment records and appointment payment lookup
 - ✅ Payment expiry job support
 
 ### Notifications
 - ✅ Doctor and department notifications
-- ✅ Read / unread tracking
+- ✅ Read/unread notification tracking
 
-### Earnings Management
-- ✅ Earnings summary endpoints
-- ✅ Monthly earnings reports
-- ✅ Payment history retrieval
+### Earnings & Dashboard
+- ✅ Earnings summary endpoints for doctors
+- ✅ Monthly payment reports
+- ✅ Dashboard analytics for doctors/admins
 
 ### Reviews
-- ✅ Add reviews for doctors
-- ✅ Retrieve doctor reviews
+- ✅ Write and fetch doctor reviews
 
 ### Dashboard
 - ✅ Analytics endpoints for doctors and admin dashboards
@@ -65,43 +63,38 @@ HealPoint enables patients to book appointments with doctors, manage availabilit
 
 | Category | Technology |
 |----------|-----------|
-| **Runtime** | Node.js |
-| **Language** | TypeScript |
-| **Framework** | Express.js |
-| **ORM** | Sequelize |
-| **Database** | MySQL |
-| **Authentication** | JWT |
-| **Validation** | Zod |
-| **File Uploads** | Multer |
-| **Payments** | Razorpay |
-| **Environment** | dotenv |
-| **Logging** | Winston |
-| **Job Scheduler** | node-cron |
+| Runtime | Node.js |
+| Language | TypeScript |
+| Framework | Express.js |
+| ORM | Sequelize |
+| Database | MySQL |
+| Authentication | JWT |
+| Validation | Zod |
+| File Uploads | Multer + Cloudinary |
+| Payments | Razorpay |
+| Environment | dotenv |
+| Logging | Winston |
+| Job Scheduler | node-cron |
+
 ---
 
 ## 🏗️ Project Architecture
 
-The application follows a **layered architecture** pattern:
+The application follows a layered architecture:
 
 ```
-Controller (HTTP Layer)
-    ↓
-Service (Business Logic)
-    ↓
-Repository (Data Access)
-    ↓
-Database (Persistence)
+Controller → Service → Repository → Database
 ```
 
 ### Layer Responsibilities
 
 | Layer | Responsibility |
-|-------|-----------------|
-| **Controllers** | Handle HTTP requests and responses |
-| **Services** | Contain business logic and validations |
-| **Repositories** | Handle database operations |
-| **Models** | Define Sequelize entities and associations |
-| **Middleware** | Authentication, authorization, validation, uploads, error handling |
+|-------|-------------------------------|
+| Controllers | HTTP request/response handling |
+| Services | Business logic and orchestration |
+| Repositories | Database access via Sequelize |
+| Models | Sequelize entity definitions and associations |
+| Middleware | Auth, validation, file upload, error handling |
 
 ---
 
@@ -109,9 +102,10 @@ Database (Persistence)
 
 ```
 src/
-├── config/                           # Configuration files
-│   ├── db.ts                        # Database connection via Sequelize
-│   ├── logger.ts                    # Logger setup
+├── config/                           # Config and third-party clients
+│   ├── cloudinary.ts                 # Cloudinary config
+│   ├── db.ts                        # Sequelize MySQL connection
+│   ├── logger.ts                    # Winston logger setup
 │   └── razorpay.ts                  # Razorpay client setup
 │
 ├── middleware/                       # Express middleware
@@ -120,7 +114,6 @@ src/
 │   ├── validator.ts                 # Request validation
 │   ├── errorHandler.ts              # Global error handling
 │   ├── rateLimiter.ts               # API rate limiting
-│   └── ...                          # Additional middleware
 │
 ├── models/                           # Sequelize models
 │   ├── userModel.ts
@@ -128,31 +121,31 @@ src/
 │   ├── patientModel.ts
 │   ├── appointmentModel.ts
 │   ├── associationsModel.ts         # Model relationships
-│   └── ...                          # Other models
 │
-├── module/                           # Feature modules
-│   ├── auth/                         # Auth routes, services, repository
+├── module/                           # Domain modules
+│   ├── auth/                         # Auth endpoints and services
 │   ├── doctors/                      # Doctor management
 │   ├── patients/                     # Patient management
-│   ├── departments/                  # Department and specialization management
-│   ├── availability/                 # Weekly availability
+│   ├── specializations/              # Departments / specializations
+│   ├── availability/                 # Availability schedules
 │   ├── unavailability/               # Doctor unavailability
-│   ├── specialAvailabilty/           # Special availability schedules
+│   ├── specialAvailabilty/           # Special availability rules
 │   ├── slots/                        # Slot lookup and generation
-│   ├── appointments/                 # Appointment booking and management
-│   ├── payment/                      # Payment orders and verification
-│   ├── notifications/                # Notification creation and retrieval
+│   ├── appointments/                 # Appointment lifecycle
+│   ├── payment/                      # Payment processing
+│   ├── notifications/                # Notification management
 │   ├── earnings/                     # Earnings and payment history
 │   ├── reviews/                      # Doctor reviews
-│   └── dashboard/                    # Dashboard analytics endpoints
+│   └── dashboard/                    # Analytics endpoints
 │
-├── migrations/                       # Sequelize database migrations
-├── seeders/                          # Sequelize seeders
-├── types/                            # TypeScript type definitions
-├── utils/                            # Utility functions and scheduled jobs
+├── migrations/                       # Sequelize migrations
+├── seeders/                          # Seed data
+├── types/                            # TypeScript definitions
+├── utils/                            # Helper utilities and jobs
 ├── app.ts                            # Express app setup
-└── server.ts                         # Server bootstrap and job startup
+└── server.ts                         # App startup and scheduled jobs
 ```
+
 ---
 
 ## 📦 Installation
@@ -172,25 +165,31 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory with the following values:
 
 ```env
-# Server Configuration
-port=5000
+# Server
+PORT=5000
 
-# Database Configuration
-DB_NAME=heal_point
-DB_USER=root
-DB_PASSWORD=your_password
-DB_HOST=localhost
+# Database
+DATABASE_URL=mysql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>
 
-# JWT Secrets
-JWT_ACCESS_SECRET=your_access_secret
-JWT_REFRESH_SECRET=your_refresh_secret
+# JWT
+JWT_SECRET=your_access_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
 
-# Razorpay Configuration
-RAZORPAY_KEY_ID=your_key
-RAZORPAY_KEY_SECRET=your_secret
+# Razorpay
+RAZORPAY_KEY_ID=your_key_id
+RAZORPAY_KEY_SECRET=your_key_secret
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Email
+EMAIL_USER=your_email@example.com
+EMAIL_PASSWORD=your_email_password
 ```
 
 ### 4. Run Development Server
@@ -205,48 +204,247 @@ npm run dev
 npm run build
 npm start
 ```
+
 ---
 
-## ⚙️ Server Configuration
+## ⚙️ Configuration
 
 | Setting | Value |
 |---------|-------|
-| **Base URL** | `/api` |
-| **Auth URL** | `/api/auth` |
-| **Notifications URL** | `/api/notifications` |
-| **Static Uploads** | `/uploads` |
-| **Frontend CORS Origin** | `http://localhost:5173` |
-| **Database** | MySQL via Sequelize |
-| **Background Jobs** | Payment expiry and consultation expiry |
+| Base URL | `/api` |
+| Auth URL | `/api/auth` |
+| Notifications URL | `/api/notifications` |
+| Database | MySQL via Sequelize |
+| Background Jobs | Payment expiry, consultation expiry, appointment reminders |
+| CORS origins | `http://localhost:5173`, `http://localhost:3000`, Vercel domains |
+
 ---
 
-## 📊 Database Modules
+## 🧩 Environment Variables
 
-The system contains the following **core entities**:
+The runtime uses environment variables directly. The project also includes Sequelize CLI config in `src/config/config.cjs`.
 
-- Users
-- Doctors
-- Patients
-- Departments / Specializations
-- Availability
-- Unavailability
-- Special Availability
-- Slots
-- Appointments
-- Payments
-- Notifications
-- Reviews
+Required variables:
 
-### Appointment Workflow
-
+```env
+PORT=5000
+DATABASE_URL=mysql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>
+JWT_SECRET=your_access_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
+RAZORPAY_KEY_ID=your_key_id
+RAZORPAY_KEY_SECRET=your_key_secret
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+EMAIL_USER=your_email@example.com
+EMAIL_PASSWORD=your_email_password
 ```
-Doctor creates availability
-    ↓
-Slots are generated
-    ↓
-Patient books appointment
-    ↓
-Payment order is created
+
+> Note: `src/config/db.ts` reads `process.env.DATABASE_URL` at runtime. `src/config/config.cjs` also supports Sequelize CLI environments.
+
+---
+
+## 📡 Key Functionality
+
+- JWT authentication and role-based authorization
+- Doctor, patient, availability, unavailability, and special availability management
+- Appointment booking, consultation lifecycle, and join links
+- Razorpay payment order creation and verification
+- Cloudinary image uploads for doctor/patient profile photos
+- Email OTP and appointment notification emails
+- Scheduled jobs for payment expiry, consultation expiry, and reminders
+- Doctor earnings and admin dashboard reports
+- Notifications and review management
+
+---
+
+## 📘 API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login and receive access token |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/logout` | Logout user |
+| POST | `/api/auth/forgot-password` | Request password reset OTP |
+| POST | `/api/auth/reset-password` | Reset password using OTP |
+| POST | `/api/auth/verify-reset-otp` | Verify password reset OTP |
+
+### File Upload
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/upload` | Upload image via Cloudinary |
+
+### Doctor Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/doctors` | Create doctor (admin only) |
+| GET | `/api/doctors` | Get all doctors |
+| GET | `/api/doctors/me` | Get current doctor profile |
+| GET | `/api/doctors/:id` | Get doctor by ID |
+| PUT | `/api/doctors/:id/photo` | Upload doctor profile photo |
+| PUT | `/api/doctors/:id` | Update doctor profile |
+| DELETE | `/api/doctors/:id` | Delete doctor (admin only) |
+
+### Patient Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/patients` | Get all patients (admin only) |
+| GET | `/api/patients/me` | Get current patient profile |
+| PUT | `/api/patients/me` | Update current patient profile |
+| PUT | `/api/patients/me/photo` | Upload patient profile photo |
+| GET | `/api/patients/:id` | Get patient by ID |
+| PUT | `/api/patients/:id` | Update patient profile |
+| PUT | `/api/patients/:id/photo` | Upload patient profile photo |
+| DELETE | `/api/patients/:id` | Delete patient (admin only) |
+
+### Departments / Specializations
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/departments` | Create specialization/department (admin only) |
+| GET | `/api/departments` | List all specializations |
+| GET | `/api/departments/:id` | Get specialization by ID (admin only) |
+| PUT | `/api/departments/:id` | Update specialization (admin only) |
+| DELETE | `/api/departments/:id` | Delete specialization (admin only) |
+
+### Availability
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/availability` | Create doctor availability |
+| GET | `/api/doctors/:doctorId/availability` | List availability for a doctor |
+| GET | `/api/availability/:id` | Get availability details |
+| PUT | `/api/availability/:id` | Update availability |
+| DELETE | `/api/availability/:id` | Delete availability |
+
+### Unavailability
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/unavailability` | Create unavailability |
+| GET | `/api/doctors/:doctorId/unavailability` | List unavailability for a doctor |
+| GET | `/api/unavailability/:id` | Get unavailability details |
+| PUT | `/api/unavailability/:id` | Update unavailability |
+| DELETE | `/api/unavailability/:id` | Delete unavailability |
+
+### Special Availability
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/special-availability` | Create special availability |
+| GET | `/api/:doctorId/special-availability` | List special availability for a doctor |
+| GET | `/api/special-availability/:id` | Get special availability by ID |
+| PUT | `/api/special-availability/:id` | Update special availability |
+| DELETE | `/api/special-availability/:id` | Delete special availability |
+
+### Slots
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/slots/:doctorId` | Retrieve available slots for a doctor |
+
+### Appointments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/appointments/book` | Book an appointment |
+| GET | `/api/appointments` | Get all appointments (admin only) |
+| GET | `/api/appointments/:id` | Get appointment by ID |
+| GET | `/api/appointments/:id/join` | Join consultation |
+| GET | `/api/patient/my-appointments` | Get current patient appointments |
+| GET | `/api/doctor/my-appointments` | Get current doctor appointments |
+| PATCH | `/api/appointments/:id/start` | Start consultation |
+| PATCH | `/api/appointments/:id/complete` | Complete consultation |
+| PATCH | `/api/appointments/:id/cancel` | Cancel appointment |
+
+### Payments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/payments/create-order` | Create Razorpay order |
+| POST | `/api/payments/verify` | Verify payment signature |
+| GET | `/api/payments/appointment/:appointmentId` | Get payment details for appointment |
+
+### Notifications
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/notifications/doctor` | Create doctor notification |
+| POST | `/api/notifications/department` | Create department notification |
+| GET | `/api/notifications` | Get notifications |
+| PATCH | `/api/notifications/read` | Mark notifications read |
+
+### Earnings
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/doctor/earnings/summary` | Get doctor earnings summary |
+| GET | `/api/doctor/earnings/payments` | Get doctor payment history |
+| GET | `/api/doctor/earnings/monthly` | Get monthly earnings |
+
+### Dashboard
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/doctor/dashboard/summary` | Doctor dashboard summary |
+| GET | `/api/doctor/dashboard/today-appointments` | Doctor today appointment summary |
+| GET | `/api/doctor/dashboard/weekly-load` | Doctor weekly load chart |
+| GET | `/api/doctor/dashboard/monthly-overview` | Doctor monthly overview |
+| GET | `/api/admin/dashboard/appointmentsOverview` | Admin appointment overview |
+| GET | `/api/admin/doctor-availability-dashboard` | Admin doctor availability dashboard |
+| GET | `/api/admin/dashboard/earnings-report` | Admin earnings report |
+| GET | `/api/admin/dashboard-overview` | Admin dashboard overview |
+
+### Reviews
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/reviews/add` | Add doctor review |
+| GET | `/api/reviews/:doctorId` | Get reviews for a doctor |
+
+---
+
+## 🔒 Security Features
+
+- ✅ JWT authentication
+- ✅ Refresh token support
+- ✅ Role-based authorization
+- ✅ Zod validation for request payloads
+- ✅ Centralized error handling
+- ✅ Protected route middleware
+- ✅ BCrypt password hashing
+
+---
+
+## 🚀 Notes
+
+- `npm run dev` uses `nodemon` and `tsx` to run `src/server.ts` directly.
+- The app initializes Sequelize associations in `src/models/associationsModel.ts` before routing.
+- Image uploads use Cloudinary; `POST /api/upload` returns the hosted image URL.
+- The app starts by authenticating the database and launching scheduled jobs for payment expiry, consultation expiry, and reminders.
+- `src/config/config.cjs` contains Sequelize CLI environment settings.
+
+---
+
+## 📄 Important Files
+
+| File | Purpose |
+|------|---------|
+| `src/server.ts` | Server bootstrap, DB auth, and scheduled job startup |
+| `src/app.ts` | Express application setup and route mounting |
+| `src/config/db.ts` | Sequelize database connection using `DATABASE_URL` |
+| `src/config/razorpay.ts` | Razorpay client initialization |
+| `src/config/cloudinary.ts` | Cloudinary file upload configuration |
+| `src/models/associationsModel.ts` | Defines model relationships |
+| `src/config/config.cjs` | Sequelize CLI environment config |
+| `postman/` | Postman collections and environments |
+
     ↓
 Payment is verified
     ↓
@@ -262,118 +460,6 @@ Appointment / consultation lifecycle continues
 - The API starts by authenticating the database, then launches scheduled jobs for payment expiry and consultation expiry.
 - Route modules are mounted under `/api`, with notifications mounted under `/api/notifications`.
 
-| POST | `/api/auth/refresh` | Refresh access token |
-| POST | `/api/auth/logout` | User logout |
-
-### Doctor Management
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/doctors` |
-| GET | `/api/doctors` |
-| GET | `/api/doctors/me` |
-| GET | `/api/doctors/:id` |
-| PUT | `/api/doctors/:id` |
-| PUT | `/api/doctors/:id/photo` |
-| DELETE | `/api/doctors/:id` |
-
-### Patient Management
-
-| Method | Endpoint |
-|--------|----------|
-| GET | `/api/patients` |
-| GET | `/api/patients/me` |
-| PUT | `/api/patients/me` |
-| PUT | `/api/patients/me/photo` |
-| GET | `/api/patients/:id` |
-| PUT | `/api/patients/:id` |
-| PUT | `/api/patients/:id/photo` |
-| DELETE | `/api/patients/:id` |
-
-### Department Management
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/departments` |
-| GET | `/api/departments` |
-| GET | `/api/departments/:id` |
-| PUT | `/api/departments/:id` |
-| DELETE | `/api/departments/:id` |
-
-### Availability Management
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/availability` |
-| GET | `/api/doctors/:doctorId/availability` |
-| GET | `/api/availability/:id` |
-| PUT | `/api/availability/:id` |
-| DELETE | `/api/availability/:id` |
-
-### Unavailability Management
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/unavailability` |
-| GET | `/api/doctors/:doctorId/unavailability` |
-| GET | `/api/unavailability/:id` |
-| PUT | `/api/unavailability/:id` |
-| DELETE | `/api/unavailability/:id` |
-
-### Special Availability
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/special-availability` |
-| GET | `/api/:doctorId/special-availability` |
-| GET | `/api/special-availability/:id` |
-| PUT | `/api/special-availability/:id` |
-| DELETE | `/api/special-availability/:id` |
-
-### Slots
-
-| Method | Endpoint |
-|--------|----------|
-| GET | `/api/slots/:doctorId` |
-
-### Appointment Management
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/appointments/book` |
-| GET | `/api/appointments` |
-| GET | `/api/appointments/:id` |
-| GET | `/api/:id/join` |
-| PATCH | `/api/appointments/:id/start` |
-| PATCH | `/api/appointments/:id/complete` |
-| GET | `/api/doctor/my-appointments` |
-| GET | `/api/patient/my-appointments` |
-
-### Payment Processing
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/payments/create-order` |
-| POST | `/api/payments/verify` |
-| GET | `/api/payments/appointment/:appointmentId` |
-
-### Notifications
-
-| Method | Endpoint |
-|--------|----------|
-| POST | `/api/notifications/doctor` |
-| POST | `/api/notifications/department` |
-| GET | `/api/notifications` |
-| PATCH | `/api/notifications/read` |
-
-### Earnings Management
-
-| Method | Endpoint |
-|--------|----------|
-| GET | `/api/doctor/earnings/summary` |
-| GET | `/api/doctor/earnings/payments` |
-| GET | `/api/doctor/earnings/monthly` |
----
 
 ## 🔒 Security Features
 
@@ -425,10 +511,7 @@ Appointment / consultation lifecycle continues
 - ✅ Real-time Notifications
 - ✅ Earnings Dashboard
 
-### In Progress
-- 🚧 Video Consultation Integration
-- 🚧 Automated Testing Suite
-- 🚧 Swagger API Documentation
+
 
 ---
 

@@ -3,7 +3,7 @@ import authRoutes from "./module/auth/authRoutes.js";
 import uploadRoutes from "./module/upload/uploadRoutes.js"
 import doctorRoutes from "./module/doctors/doctorRoutes.js"
 import patientRoutes from "./module/patients/patientRoutes.js"
-import departmentRoutes from "./module/Specializations/specializationRoutes.js"
+import departmentRoutes from "./module/specializations/specializationRoutes.js"
 import availabilityRoutes from "./module/availability/availabilityRoutes.js"
 import unavailabilityRoutes from "./module/unavailability/unavailabilityRoutes.js"
 import specialAvailabilityRoutes from "./module/specialAvailabilty/specialAvailabilityRouter.js"
