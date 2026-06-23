@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import Appointment, { type AppointmentCreationAttributes } from "../../models/appointmentModel.js";
 import Doctor from "../../models/doctorModel.js";
 import Patient from "../../models/patientModel.js";
@@ -9,8 +9,14 @@ import { getDateRangeFilter } from "../../utils/dateFilter.js";
 
 
 export class AppointmentRepository {
-    async createAppointment(data: AppointmentCreationAttributes) {
-        return await Appointment.create(data);
+    async createAppointment(
+        data: AppointmentCreationAttributes,
+        transaction?: Transaction
+    ) {
+        return await Appointment.create(
+            data,
+            transaction ? { transaction } : {}
+        );
     }
 
     async getAppointmentById(id: number) {
@@ -123,6 +129,21 @@ export class AppointmentRepository {
         });
     }
 
+    async getBookedAppointmentsByDate(doctorId: number, appointmentDate: string) {
+        return await Appointment.findAll({
+            where: {
+                doctor_id: doctorId,
+                appointment_date: appointmentDate,
+                status: {
+                    [Op.in]: [
+                        "pending_payment",
+                        "confirmed"
+                    ]
+                }
+            }
+        });
+    }
+
     async getDoctorAppointments(
         doctorId: number,
         page: number = 1,
@@ -162,7 +183,7 @@ export class AppointmentRepository {
             }
         }
 
-       const dateFilter = getDateRangeFilter(month, year);
+        const dateFilter = getDateRangeFilter(month, year);
 
         if (dateFilter) {
             appointmentWhere.appointment_date = dateFilter;
@@ -322,21 +343,25 @@ export class AppointmentRepository {
         });
     }
 
-    async updateAppointmentStatus(appointmentId: number, status: AppointmentStatus) {
+    async updateAppointmentStatus(appointmentId: number, status: AppointmentStatus, transaction?: Transaction) {
         return await Appointment.update(
             { status },
-            { where: { id: appointmentId } }
+            {
+                where: { id: appointmentId },
+                ...(transaction ? { transaction } : {})
+            }
         );
     }
 
-    async updateMeetingDetails(appointmentId: number, meetingRoom: string) {
+    async updateMeetingDetails(appointmentId: number, meetingRoom: string, transaction?: Transaction) {
         return await Appointment.update(
             {
                 meeting_room: meetingRoom,
                 consultation_status: "scheduled"
             },
             {
-                where: { id: appointmentId }
+                where: { id: appointmentId },
+                ...(transaction ? { transaction } : {})
             }
         );
     }
@@ -344,7 +369,8 @@ export class AppointmentRepository {
     async getActiveAppointmentBySlot(
         doctorId: number,
         appointmentDate: string,
-        startTime: string
+        startTime: string,
+        transaction?: Transaction
     ) {
         return await Appointment.findOne({
             where: {
@@ -358,7 +384,8 @@ export class AppointmentRepository {
                         "completed"
                     ]
                 }
-            }
+            },
+            ...(transaction ? { transaction } : {})
         });
     }
 
@@ -375,15 +402,21 @@ export class AppointmentRepository {
 
     async cancelAppointment(appointmentId: number) {
         return await Appointment.update(
-            { status: "cancelled" },
+            {
+                status: "cancelled",
+                consultation_status: null
+            },
             { where: { id: appointmentId } }
         );
     }
 
-    async clearPaymentExpiry(appointmentId: number) {
+    async clearPaymentExpiry(appointmentId: number, transaction?: Transaction) {
         return await Appointment.update(
             { payment_expires_at: null },
-            { where: { id: appointmentId } }
+            {
+                where: { id: appointmentId },
+                ...(transaction ? { transaction } : {})
+            }
         );
     }
 

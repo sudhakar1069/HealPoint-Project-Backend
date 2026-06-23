@@ -39,4 +39,13 @@ export class DoctorUnavailabilityRepository {
     async deleteUnavailability(id: number) {
         return await DoctorUnavailability.destroy({ where: { id } });
     }
+
+    async deleteByDoctorAndDate(doctorId: number, unavailableDate: string) {
+        return await DoctorUnavailability.destroy({
+            where: {
+                doctor_id: doctorId,
+                unavailable_date: unavailableDate
+            }
+        });
+    }
 }

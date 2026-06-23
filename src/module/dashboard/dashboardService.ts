@@ -139,24 +139,31 @@ export class DashboardService {
         };
     }
 
-    async getAdminEarningsReport(period: string) {
+    async getAdminEarningsReport(period: string, year?: number) {
         const now = new Date();
+
         let startDate: Date;
+        let endDate: Date;
 
         if (period === "week") {
+            endDate = now;
             startDate = new Date();
             startDate.setDate(now.getDate() - 7);
         } else if (period === "month") {
+            endDate = now;
             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         } else {
-            startDate = new Date(now.getFullYear(), 0, 1);
+            const selectedYear = year ?? now.getFullYear();
+
+            startDate = new Date(selectedYear, 0, 1);
+            endDate = new Date(selectedYear, 11, 31, 23, 59, 59);
         }
 
-        const totalRevenue = await this.dashboardRepository.getTotalRevenue(startDate, now);
-        const totalConsultations = await this.dashboardRepository.getTotalConsultations(startDate, now);
-        const revenueTrend = await this.dashboardRepository.getRevenueTrend(startDate, now);
+        const totalRevenue = await this.dashboardRepository.getTotalRevenue(startDate, endDate);
+        const totalConsultations = await this.dashboardRepository.getTotalConsultations(startDate, endDate);
+        const revenueTrend = await this.dashboardRepository.getRevenueTrend(startDate, endDate);
 
-        const consultations = await this.dashboardRepository.getRecentConsultations(startDate, now);
+        const consultations = await this.dashboardRepository.getRecentConsultations(startDate, endDate);
 
         const recentConsultations = consultations.map((item: any) => ({
             patientName: item.appointment?.patient?.user?.name || null,
@@ -180,34 +187,34 @@ export class DashboardService {
     }
 
     async getAdminDashboardOverview(year: number) {
-    const totalDoctors = await this.dashboardRepository.getTotalDoctors();
-    const totalPatients = await this.dashboardRepository.getTotalPatients();
-    const totalAppointments = await this.dashboardRepository.getTotalAppointments();
-    const totalRevenue = await this.dashboardRepository.getAdminRevenue();
+        const totalDoctors = await this.dashboardRepository.getTotalDoctors();
+        const totalPatients = await this.dashboardRepository.getTotalPatients();
+        const totalAppointments = await this.dashboardRepository.getTotalAppointments();
+        const totalRevenue = await this.dashboardRepository.getAdminRevenue();
 
-    const appointmentTrend = await this.dashboardRepository.getAppointmentTrend(year);
+        const appointmentTrend = await this.dashboardRepository.getAppointmentTrend(year);
 
-    const appointments = await this.dashboardRepository.getRecentAppointments();
+        const appointments = await this.dashboardRepository.getRecentAppointments();
 
-    const recentAppointments = appointments.map((item: any) => ({
-        patientName: item.patient?.user?.name || null,
-        doctorName: item.doctor?.user?.name || null,
-        appointmentDate: item.appointment_date || null,
-        consultationType: item.consultation_type || null,
-        amount: Number(item.payment?.amount || 0),
-        paymentStatus: item.payment?.status || null,
-        status: item.status
-    }));
+        const recentAppointments = appointments.map((item: any) => ({
+            patientName: item.patient?.user?.name || null,
+            doctorName: item.doctor?.user?.name || null,
+            appointmentDate: item.appointment_date || null,
+            consultationType: item.consultation_type || null,
+            amount: Number(item.payment?.amount || 0),
+            paymentStatus: item.payment?.status || null,
+            status: item.status
+        }));
 
-    return {
-        summary: {
-            totalDoctors,
-            totalPatients,
-            totalAppointments,
-            totalRevenue
-        },
-        appointmentTrend,
-        recentAppointments
-    };
-}
+        return {
+            summary: {
+                totalDoctors,
+                totalPatients,
+                totalAppointments,
+                totalRevenue
+            },
+            appointmentTrend,
+            recentAppointments
+        };
+    }
 }

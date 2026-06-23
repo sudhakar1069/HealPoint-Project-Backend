@@ -1,10 +1,12 @@
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { DoctorUnavailabilityRepository } from "./unavailabilityRepository.js";
-import type { CreateUnavailabilityDto, UpdateUnavailabilityDto } from "../../types/unavailabilityTypes.js";
+import { AppointmentRepository } from "../appointments/appointmentRepository.js";
+import type { CreateUnavailabilityDto } from "../../types/unavailabilityTypes.js";
 export class DoctorUnavailabilityService {
     constructor(
         private doctorUnavailabilityRepository: DoctorUnavailabilityRepository,
-        private doctorRepository: DoctorRepository
+        private doctorRepository: DoctorRepository,
+        private appointmentRepository: AppointmentRepository
     ) { }
 
     private isTimeOverlapping(
@@ -41,6 +43,36 @@ export class DoctorUnavailabilityService {
         return doctor;
     }
 
+    private async validateBookedAppointments(doctorId: number, data: CreateUnavailabilityDto) {
+        const appointments = await this.appointmentRepository
+            .getBookedAppointmentsByDate(doctorId, data.unavailable_date);
+
+        if (appointments.length === 0) {
+            return;
+        }
+
+        if (data.is_full_day) {
+            throw new Error(
+                "You have booked appointments. Please cancel them before marking unavailability"
+            );
+        }
+
+        for (const appointment of appointments) {
+            const isOverlapping = this.isTimeOverlapping(
+                data.start_time!,
+                data.end_time!,
+                appointment.start_time,
+                appointment.end_time
+            );
+
+            if (isOverlapping) {
+                throw new Error(
+                    "You have booked appointments during this time. Please cancel them before marking unavailability"
+                );
+            }
+        }
+    }
+
     async createUnavailability(doctorId: number, data: CreateUnavailabilityDto) {
         await this.validateDoctor(doctorId);
 
@@ -53,6 +85,7 @@ export class DoctorUnavailabilityService {
             data.start_time,
             data.end_time
         );
+        await this.validateBookedAppointments(doctorId, data);
 
         const existingUnavailabilities = await this.doctorUnavailabilityRepository
             .getDoctorUnavailabilityByDate(doctorId, data.unavailable_date);
@@ -63,13 +96,25 @@ export class DoctorUnavailabilityService {
                     "Doctor already unavailable for full day"
                 );
             }
+        }
 
-            if (data.is_full_day) {
-                throw new Error(
-                    "Partial unavailability already exists on this day"
-                );
+        if (data.is_full_day) {
+            if (existingUnavailabilities.length > 0) {
+                await this.doctorUnavailabilityRepository
+                    .deleteByDoctorAndDate(
+                        doctorId,
+                        data.unavailable_date
+                    );
             }
 
+            return await this.doctorUnavailabilityRepository
+                .createUnavailability({
+                    doctor_id: doctorId,
+                    ...data
+                });
+        }
+
+        for (const existing of existingUnavailabilities) {
             const isOverlapping = this.isTimeOverlapping(
                 data.start_time!,
                 data.end_time!,
@@ -85,7 +130,10 @@ export class DoctorUnavailabilityService {
         }
 
         return await this.doctorUnavailabilityRepository
-            .createUnavailability({ doctor_id: doctorId, ...data });
+            .createUnavailability({
+                doctor_id: doctorId,
+                ...data
+            });
     }
 
     async getDoctorUnavailabilities(doctorId: number) {
@@ -103,63 +151,6 @@ export class DoctorUnavailabilityService {
             throw new Error("Unavailability not found");
         }
         return unavailability;
-    }
-
-    async updateUnavailability(
-        doctorId: number,
-        unavailabilityId: number,
-        data: UpdateUnavailabilityDto
-    ) {
-        await this.validateDoctor(doctorId);
-
-        const unavailability = await this.doctorUnavailabilityRepository
-            .getDoctorUnavailabilityById(unavailabilityId);
-
-        if (!unavailability) {
-            throw new Error("Unavailability not found");
-        }
-
-        if (unavailability.doctor_id !== doctorId) {
-            throw new Error("Unauthorized access");
-        }
-
-        const isFullDay = data.is_full_day ?? unavailability.is_full_day;
-        const startTime = data.start_time ?? unavailability.start_time;
-        const endTime = data.end_time ?? unavailability.end_time;
-        const unavailableDate = data.unavailable_date ?? unavailability.unavailable_date;
-
-        this.validateTimeRange(isFullDay, startTime, endTime);
-
-        const existingUnavailabilities = await this.doctorUnavailabilityRepository
-            .getDoctorUnavailabilityByDate(doctorId, unavailableDate);
-
-        for (const existing of existingUnavailabilities) {
-            if (existing.id === unavailabilityId) {
-                continue;
-            }
-
-            if (existing.is_full_day || isFullDay) {
-                throw new Error(
-                    "Full-day unavailability conflict exists"
-                );
-            }
-
-            const isOverlapping = this.isTimeOverlapping(
-                startTime!,
-                endTime!,
-                existing.start_time!,
-                existing.end_time!
-            );
-
-            if (isOverlapping) {
-                throw new Error(
-                    "Unavailability timing overlaps with existing unavailability"
-                );
-            }
-        }
-
-        return await this.doctorUnavailabilityRepository
-            .updateUnavailability(unavailabilityId, data);
     }
 
     async deleteUnavailability(doctorId: number, unavailabilityId: number) {

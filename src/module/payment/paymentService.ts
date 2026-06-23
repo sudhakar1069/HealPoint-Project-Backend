@@ -5,6 +5,7 @@ import { AppointmentRepository } from "../appointments/appointmentRepository.js"
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { generateMeetingRoom } from "../../utils/jitsiMeeting.js";
 import { EmailService } from "../../utils/emailService.js";
+import { sequelize } from "../../config/db.js";
 interface VerifyPaymentDto {
     razorpay_order_id: string;
     razorpay_payment_id: string;
@@ -75,6 +76,17 @@ export class PaymentService {
         return order;
     }
 
+    private async refundPayment(razorpayPaymentId: string, appointmentId: number) {
+        try {
+            await razorpay.payments.refund(razorpayPaymentId, {});
+            await this.paymentRepository.markRefunded(appointmentId);
+            await this.appointmentRepository.cancelAppointment(appointmentId);
+
+        } catch (error) {
+            console.error("Refund failed:", error);
+        }
+    }
+
     async verifyPayment(data: VerifyPaymentDto) {
         const {
             razorpay_order_id,
@@ -97,6 +109,13 @@ export class PaymentService {
             throw new Error("Payment not found");
         }
 
+        if (payment.status === "paid") {
+            return {
+                success: true,
+                appointment_id: payment.appointment_id
+            };
+        }
+
         const appointment = await this.appointmentRepository.getAppointmentById(
             payment.appointment_id
         );
@@ -109,28 +128,54 @@ export class PaymentService {
             throw new Error("Appointment already expired");
         }
 
-        await this.paymentRepository.updatePaymentSuccess(
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature
-        );
+        const transaction = await sequelize.transaction();
+        let committed = false;
+        try {
+            await this.paymentRepository.updatePaymentSuccess(
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature,
+                transaction
+            );
 
-        await this.appointmentRepository.updateAppointmentStatus(
-            payment.appointment_id,
-            "confirmed"
-        );
+            await this.appointmentRepository.updateAppointmentStatus(
+                payment.appointment_id,
+                "confirmed",
+                transaction
+            );
 
-        const meetingRoom = generateMeetingRoom(
-            appointment.doctor_id,
-            appointment.patient_id
-        );
+            const meetingRoom = generateMeetingRoom(
+                appointment.doctor_id,
+                appointment.patient_id
+            );
 
-        await this.appointmentRepository.updateMeetingDetails(
-            appointment.id,
-            meetingRoom
-        );
+            await this.appointmentRepository.updateMeetingDetails(
+                appointment.id,
+                meetingRoom,
+                transaction
+            );
 
-        await this.appointmentRepository.clearPaymentExpiry(payment.appointment_id);
+            await this.appointmentRepository.clearPaymentExpiry(
+                payment.appointment_id,
+                transaction
+            );
+
+            await transaction.commit();
+            committed = true;
+
+        } catch (error) {
+
+            if (!committed) {
+                await transaction.rollback();
+            }
+            // Payment may already be successful.
+            // Refund it and cancel appointment.
+            await this.refundPayment(
+                razorpay_payment_id,
+                payment.appointment_id
+            );
+            throw error;
+        }
 
         const updatedAppointment: any =
             await this.appointmentRepository.getAppointmentDetails(payment.appointment_id);
@@ -149,7 +194,6 @@ export class PaymentService {
                 console.error("Email sending failed:", error);
             }
         }
-
         return {
             success: true,
             appointment_id: payment.appointment_id

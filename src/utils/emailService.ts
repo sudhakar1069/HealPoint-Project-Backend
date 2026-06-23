@@ -143,7 +143,7 @@ export class EmailService {
                 <tr>
                     <td><strong>Meeting Link</strong></td>
                     <td>
-                        <a href="${meetingRoom}">
+                        <a href="https://meet.jit.si/${meetingRoom}">
                             Join Consultation
                         </a>
                     </td>
@@ -154,4 +154,73 @@ export class EmailService {
             `
         );
     }
+
+    async sendAppointmentCancellationEmail(
+    email: string,
+    patientName: string,
+    doctorName: string,
+    appointmentDate: string,
+    appointmentTime: string
+) {
+    await this.sendEmail(
+        email,
+        "Appointment Cancelled",
+        `
+        <h2>Appointment Cancelled</h2>
+
+        <p>Hello ${patientName},</p>
+
+        <p>
+            We sincerely apologize for the inconvenience.
+        </p>
+
+        <p>
+            Unfortunately, your appointment with
+            <strong>Dr. ${doctorName}</strong>
+            has been cancelled due to the doctor's unavailability.
+        </p>
+
+        <table
+            border="1"
+            cellpadding="10"
+            cellspacing="0"
+            style="border-collapse: collapse;"
+        >
+            <tr>
+                <td><strong>Doctor</strong></td>
+                <td>Dr. ${doctorName}</td>
+            </tr>
+
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>${appointmentDate}</td>
+            </tr>
+
+            <tr>
+                <td><strong>Time</strong></td>
+                <td>${appointmentTime}</td>
+            </tr>
+        </table>
+
+        <p>
+            We kindly request you to log in to HealPoint and check the doctor's
+            available slots to book another appointment at your convenience.
+        </p>
+
+        <p>
+            If you have already completed the payment, your refund will be
+            processed shortly.
+        </p>
+
+        <p>
+            We truly appreciate your patience and understanding, and we apologize
+            once again for the inconvenience caused.
+        </p>
+
+        <p>
+            Thank you for choosing HealPoint.
+        </p>
+        `
+    );
+}
 }

@@ -5,6 +5,7 @@ import { SlotService } from "../slots/slotService.js";
 import { PaymentRepository } from "../payment/paymentRepository.js";
 import { EmailService } from "../../utils/emailService.js";
 import type { BookAppointmentDto } from "../../types/bookAppointmentDto.js";
+import { sequelize } from "../../config/db.js";
 
 export class AppointmentService {
     constructor(
@@ -16,6 +17,7 @@ export class AppointmentService {
 
     ) { }
     private emailService = new EmailService();
+
     private buildPaginationResponse(result: any, page: number, limit: number, appointments: any[]) {
         return {
             totalRecords: result.count,
@@ -26,69 +28,91 @@ export class AppointmentService {
     }
 
     async bookAppointment(patientId: number, data: BookAppointmentDto) {
-        const {
-            doctor_id,
-            appointment_date,
-            start_time,
-            end_time,
-            consultation_type,
-            reason
-        } = data;
+        const transaction = await sequelize.transaction();
+        try {
+            const {
+                doctor_id,
+                appointment_date,
+                start_time,
+                end_time,
+                consultation_type,
+                reason
+            } = data;
 
-        const appointmentDateTime = new Date(
-            `${appointment_date}T${start_time}:00`
-        );
+            const appointmentDateTime = new Date(
+                `${appointment_date}T${start_time}:00`
+            );
 
-        if (appointmentDateTime <= new Date()) {
-            throw new Error("Cannot book past slots");
+            if (appointmentDateTime <= new Date()) {
+                throw new Error("Cannot book past slots");
+            }
+
+            const patient = await this.patientRepository.getPatientById(patientId);
+            if (!patient) {
+                throw new Error("Patient not found");
+            }
+
+            await this.doctorRepository.lockDoctorById(
+                doctor_id,
+                transaction
+            );
+
+            const doctor = await this.doctorRepository.getDoctorById(doctor_id);
+
+            if (!doctor) {
+                throw new Error("Doctor not found");
+            }
+
+            const existingAppointment = await this.appointmentRepository.getActiveAppointmentBySlot(
+                doctor_id,
+                appointment_date,
+                start_time,
+                transaction
+            );
+
+            if (existingAppointment) {
+                throw new Error("Slot already booked");
+            }
+
+            const availableSlots = await this.slotService.getDoctorSlots(
+                doctor_id,
+                appointment_date
+            );
+
+            const matchedSlot = availableSlots.find(
+                slot =>
+                    slot.start_time === start_time &&
+                    slot.end_time === end_time
+            );
+
+            if (!matchedSlot || matchedSlot.status !== "available") {
+                throw new Error("Selected slot is not available");
+            }
+
+            const paymentExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+            const appointment = await this.appointmentRepository.createAppointment(
+                {
+                    patient_id: patient.id,
+                    doctor_id,
+                    appointment_date,
+                    start_time,
+                    end_time,
+                    consultation_type,
+                    reason,
+                    status: "pending_payment",
+                    payment_expires_at: paymentExpiry
+                },
+                transaction
+            );
+
+            await transaction.commit();
+            return appointment;
+
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
         }
-
-        const patient = await this.patientRepository.getPatientById(patientId);
-
-        if (!patient) {
-            throw new Error("Patient not found");
-        }
-
-        const doctor = await this.doctorRepository.getDoctorById(doctor_id);
-
-        if (!doctor) {
-            throw new Error("Doctor not found");
-        }
-
-        const existingAppointment = await this.appointmentRepository
-            .getActiveAppointmentBySlot(doctor_id, appointment_date, start_time);
-
-        if (existingAppointment) {
-            throw new Error("Slot already booked");
-        }
-
-        const availableSlots = await this.slotService.getDoctorSlots(
-            doctor_id,
-            appointment_date
-        );
-
-        const matchedSlot = availableSlots.find(slot =>
-            slot.start_time === start_time &&
-            slot.end_time === end_time
-        );
-
-        if (!matchedSlot || matchedSlot.status !== "available") {
-            throw new Error("Selected slot is not available");
-        }
-
-        const paymentExpiry = new Date(Date.now() + 5 * 60 * 1000);
-
-        return await this.appointmentRepository.createAppointment({
-            patient_id: patient.id,
-            doctor_id,
-            appointment_date,
-            start_time,
-            end_time,
-            consultation_type,
-            reason,
-            status: "pending_payment",
-            payment_expires_at: paymentExpiry
-        });
     }
 
     async joinConsultation(appointmentId: number, profileId: number, role: string) {
@@ -128,7 +152,7 @@ export class AppointmentService {
         const appointmentDateTime = new Date(
             `${appointment.appointment_date}T${appointment.start_time}`
         );
-
+        //Allow joining the consultation only before 10 minutes
         const joinAllowedTime = new Date(
             appointmentDateTime.getTime() - 10 * 60 * 1000
         );
@@ -317,7 +341,7 @@ export class AppointmentService {
 
     async cancelAppointment(appointmentId: number, profileId: number, role: string) {
         const appointment = await this.appointmentRepository
-            .getAppointmentById(appointmentId);
+            .getAppointmentDetails(appointmentId) as any;
 
         if (!appointment) {
             throw new Error("Appointment not found");
@@ -342,9 +366,23 @@ export class AppointmentService {
         const payment = await this.paymentRepository.getByAppointmentId(appointment.id);
 
         await this.appointmentRepository.cancelAppointment(appointment.id);
-
+        //After cancellation payment status changed to refunded
         if (payment && payment.status === "paid") {
             await this.paymentRepository.markRefunded(appointment.id);
+
+            if (role === "doctor") {
+                try {
+                    await this.emailService.sendAppointmentCancellationEmail(
+                        appointment.patient.user.email,
+                        appointment.patient.user.name,
+                        appointment.doctor.user.name,
+                        appointment.appointment_date,
+                        appointment.start_time
+                    );
+                } catch (error) {
+                    console.error("Failed to send cancellation email:", error);
+                }
+            }
 
             return {
                 appointment_id: appointment.id,
@@ -459,7 +497,6 @@ export class AppointmentService {
     async sendUpcomingAppointmentReminders() {
 
         const appointments = await this.appointmentRepository.getAppointmentsForReminder();
-         console.log("Appointments found:", appointments.length);
         const now = new Date();
         for (const appointment of appointments as any[]) {
 
@@ -468,7 +505,7 @@ export class AppointmentService {
             );
 
             const diffMinutes = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60);
-  console.log("Diff minutes:", diffMinutes);
+            //Sending an reminder 10 minutes before the appointment start time
             if (diffMinutes <= 10 && diffMinutes > 0) {
                 try {
                     await this.emailService.sendAppointmentReminderEmail(

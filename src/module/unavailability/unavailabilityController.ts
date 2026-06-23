@@ -3,13 +3,16 @@ import { asyncHandler } from "../../middleware/asyncHandler.js";
 import { DoctorRepository } from "../doctors/doctorRepository.js";
 import { DoctorUnavailabilityRepository } from "./unavailabilityRepository.js";
 import { DoctorUnavailabilityService } from "./unavailabilityService.js";
+import { AppointmentRepository } from "../appointments/appointmentRepository.js";
 
 const doctorRepository = new DoctorRepository();
 
 const doctorUnavailabilityRepository = new DoctorUnavailabilityRepository();
+const appointmentRepository = new AppointmentRepository();
 const doctorUnavailabilityService = new DoctorUnavailabilityService(
     doctorUnavailabilityRepository,
-    doctorRepository
+    doctorRepository,
+    appointmentRepository
 );
 
 export const createUnavailability = asyncHandler(
@@ -49,22 +52,6 @@ export const getDoctorUnavailabilityById = asyncHandler(
 
         return res.status(200).json({
             success: true,
-            data: result
-        });
-    }
-);
-
-export const updateUnavailability = asyncHandler(
-    async (req: Request, res: Response) => {
-
-        const doctorId = req.user!.profile_id;
-        const unavailabilityId = Number(req.params.id);
-        const result = await doctorUnavailabilityService
-            .updateUnavailability(doctorId, unavailabilityId, req.body);
-
-        return res.status(200).json({
-            success: true,
-            message: "Unavailability updated successfully",
             data: result
         });
     }

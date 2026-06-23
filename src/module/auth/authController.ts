@@ -108,3 +108,25 @@ export const verifyResetOtp = asyncHandler(
         return res.status(200).json(result);
     }
 );
+
+export const updateAdminProfile = asyncHandler(
+    async (req: Request, res: Response) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+        const result = await authService.updateAdminProfile(
+            req.user.id,
+            req.user.role,
+            req.body
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+            data: result.user
+        });
+    }
+);

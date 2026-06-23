@@ -4,6 +4,40 @@ A healthcare appointment management backend built with **Node.js**, **TypeScript
 
 HealPoint enables patients to book appointments with doctors, manage availability and special availability, process Razorpay payments, send notifications, and manage consultations.
 
+
+Login Credentials:
+---------------------
+Admin:
+-------
+
+Email - sudhakar@gmail.com,
+password - 123456
+
+Doctor:
+----------
+
+Email: priya@gmail.com,
+password: 123456
+
+Patient:
+-----------
+
+Email: sudhakarinfoo@gmail.com,
+password: 123456
+
+Razorpay Card Details:
+-------------------------
+
+Card Number: 5267 3181 8797 5449,
+
+Expiry : 12/26,
+
+CVV: 123,
+
+OTP: 1234 (or) 123456
+
+
+HealPoint
 ---
 
 ## ✨ Features
@@ -75,6 +109,8 @@ HealPoint enables patients to book appointments with doctors, manage availabilit
 | Environment | dotenv |
 | Logging | Winston |
 | Job Scheduler | node-cron |
+| Email service | Resend|
+| Video consultation | Jitsi|
 
 ---
 
@@ -271,6 +307,7 @@ EMAIL_PASSWORD=your_email_password
 | POST | `/api/auth/forgot-password` | Request password reset OTP |
 | POST | `/api/auth/reset-password` | Reset password using OTP |
 | POST | `/api/auth/verify-reset-otp` | Verify password reset OTP |
+| Put  | `/api/auth/update-admin-profile` |Update Admin profile |
 
 ### File Upload
 
@@ -330,7 +367,6 @@ EMAIL_PASSWORD=your_email_password
 | POST | `/api/unavailability` | Create unavailability |
 | GET | `/api/doctors/:doctorId/unavailability` | List unavailability for a doctor |
 | GET | `/api/unavailability/:id` | Get unavailability details |
-| PUT | `/api/unavailability/:id` | Update unavailability |
 | DELETE | `/api/unavailability/:id` | Delete unavailability |
 
 ### Special Availability
@@ -474,16 +510,12 @@ Appointment / consultation lifecycle continues
 
 ## 🚀 Future Enhancements
 
-- 📋 **Swagger/OpenAPI Documentation** - Complete API documentation
 - 🧪 **Unit Testing** - Comprehensive test coverage
 - 🔄 **Integration Testing** - End-to-end testing
 - 🐳 **Docker Support** - Containerization
 - 🔀 **CI/CD Pipeline** - Automated deployments
-- 📧 **Email Notifications** - Email alerts
 - 📱 **SMS Notifications** - SMS alerts
-- 🎥 **Video Consultation Integration** - Jitsi/WebRTC support
 - 💾 **Redis Caching** - Performance optimization
-- 📝 **Audit Logging** - Activity tracking
 ---
 
 ## 📄 Important Files

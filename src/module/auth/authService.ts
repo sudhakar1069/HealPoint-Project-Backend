@@ -2,48 +2,78 @@ import bcrypt from "bcrypt";
 import type { Request } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { RegisterDTO } from "../../types/registerDto.js";
+import type { UpdateAdminProfileDTO } from "../../types/updateAdminProfileDto.js";
 import { generateAccessToken, generateRefreshToken } from "../../utils/tokens.js";
 import { EmailService } from "../../utils/emailService.js";
 import type { UserRepository } from "./authRepository.js";
+import { sequelize } from "../../config/db.js";
 
 export class AuthService {
     constructor(private userRepository: UserRepository) { }
     private emailService = new EmailService();
 
+
     async register(data: RegisterDTO) {
-        const { name, phone_number, gender, email, password, confirm_password } = data;
-
-        const existing = await this.userRepository.findByEmail(email);
-        if (existing) throw { status: 400, message: "Email already exists" };
-
-        if (password !== confirm_password)
-            throw { status: 400, message: "Password and confirm password must be same" };
-
-        const hashed = await bcrypt.hash(password, 10);
-
-        const user = await this.userRepository.create({
-            name,
-            phone_number,
-            gender,
-            email,
-            password: hashed,
-            role: "patient"
-        });
-
-        await this.userRepository.createPatient({
-            user_id: user.id,
-            dob: null,
-            age: null,
-            blood_group: null,
-            address: null
-        });
-
+        const transaction = await sequelize.transaction();
         try {
-            await this.emailService.sendWelcomeEmail(user.email, user.name);
+            const {
+                name,
+                phone_number,
+                gender,
+                email,
+                password,
+                confirm_password
+            } = data;
+
+            const existing = await this.userRepository.findByEmail(email);
+
+            if (existing)
+                throw { status: 400, message: "Email already exists" };
+
+            if (password !== confirm_password)
+                throw {
+                    status: 400,
+                    message: "Password and confirm password must be same"
+                };
+
+            const hashed = await bcrypt.hash(password, 10);
+            const user = await this.userRepository.create(
+                {
+                    name,
+                    phone_number,
+                    gender,
+                    email,
+                    password: hashed,
+                    role: "patient"
+                },
+                transaction
+            );
+
+            await this.userRepository.createPatient(
+                {
+                    user_id: user.id,
+                    dob: null,
+                    age: null,
+                    blood_group: null,
+                    address: null
+                },
+                transaction
+            );
+            await transaction.commit();
+
+            try {
+                await this.emailService.sendWelcomeEmail(
+                    user.email,
+                    user.name
+                );
+            } catch (error) {
+                console.error("Welcome email failed:", error);
+            }
+            return user;
         } catch (error) {
-            console.error("Welcome email failed:", error);
+            await transaction.rollback();
+            throw error;
         }
-        return user;
     }
 
     async login(email: string, password: string, req: Request) {
@@ -198,6 +228,91 @@ export class AuthService {
         };
     }
 
+
+    async updateAdminProfile(userId: number, role: string, data: UpdateAdminProfileDTO) {
+
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw { status: 404, message: "Admin not found" };
+        }
+
+        const {
+            name,
+            phone_number,
+            gender,
+            profile_picture,
+            old_password,
+            new_password,
+            confirm_password
+        } = data;
+
+        const updateData: any = {}
+        if (name !== undefined) updateData.name = name;
+        if (phone_number !== undefined) updateData.phone_number = phone_number;
+        if (gender !== undefined) updateData.gender = gender;
+        if (profile_picture !== undefined) updateData.profile_picture = profile_picture;
+
+        const isPasswordUpdate = old_password || new_password || confirm_password;
+
+        if (isPasswordUpdate) {
+
+            if (!old_password || !new_password || !confirm_password) {
+                throw {
+                    status: 400,
+                    message: "old_password, new_password and confirm_password are required"
+                };
+            }
+
+            const isOldPasswordCorrect = await bcrypt.compare(old_password, user.password);
+            if (!isOldPasswordCorrect) {
+                throw {
+                    status: 400,
+                    message: "Old password is incorrect"
+                };
+            }
+
+            if (new_password !== confirm_password) {
+                throw {
+                    status: 400,
+                    message: "Password and confirm password must be same"
+                };
+            }
+
+            if (old_password === new_password) {
+                throw {
+                    status: 400,
+                    message: "New password cannot be same as old password"
+                };
+            }
+
+            const hashedPassword = await bcrypt.hash(new_password, 10);
+            updateData.password = hashedPassword;
+
+            // Force logout from all devices
+            updateData.refresh_token = null;
+        }
+
+        await this.userRepository.updateAdminProfile(userId, updateData);
+        const updatedUser =  await this.userRepository.findById(userId);
+
+        if (!updatedUser) {
+            throw {
+                status: 404,
+                message: "Admin not found"
+            };
+        }
+
+        const { password, refresh_token, ...safeUser } =
+            updatedUser.toJSON();
+
+        return {
+            message: isPasswordUpdate
+                ? "Profile and password updated successfully"
+                : "Profile updated successfully",
+            user: safeUser
+        };
+    }
+    
     async resetPassword(email: string, password: string, confirmPassword: string) {
         if (password !== confirmPassword) {
             throw {

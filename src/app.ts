@@ -15,7 +15,7 @@ import earningRoutes from "./module/earnings/earningRoutes.js"
 import reviewRoutes from "./module/reviews/reviewRoutes.js"
 import dashboardRoutes from "./module/dashboard/dashboardRoutes.js"
 import { errorHandler } from "./middleware/errorHandler.js";
-// import { globalLimiter } from "./middleware/rateLimiter.js";
+import { requestLogger } from "./middleware/requestLogger.js";
 import "./models/associationsModel.js"
 import cors from "cors"
 import cookieParser from "cookie-parser";
@@ -31,7 +31,7 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
-            // allow requests with no origin (mobile apps, postman)
+
             if (!origin) return callback(null, true);
 
             if (allowedOrigins.includes(origin)) {
@@ -42,7 +42,7 @@ app.use(
                 return callback(null, true);
             }
 
-            return callback(null, false); // IMPORTANT: DO NOT throw error
+            return callback(null, false); 
         },
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -52,9 +52,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(requestLogger);
 
 app.set("trust proxy", 1);
-// app.use(globalLimiter)
 app.use("/api/auth", authRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", doctorRoutes)

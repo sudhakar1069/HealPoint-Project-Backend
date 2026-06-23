@@ -219,7 +219,7 @@ export class DashboardRepository {
             const cancelled = await Appointment.count({
                 where: {
                     doctor_id: doctor.id,
-                    consultation_status: "cancelled"
+                    status: "cancelled"
                 }
             });
 

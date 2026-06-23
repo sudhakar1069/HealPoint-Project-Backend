@@ -146,7 +146,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\":\"priya@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
+              "raw": "{\r\n    \"email\":\"prashanth@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -264,6 +264,24 @@
         },
         {
           "name": "refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.environment.set(\r",
+                  "    \"token\",\r",
+                  "    response.accessToken\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [],
@@ -365,6 +383,19 @@
         },
         {
           "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.unset(\"token\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
@@ -379,12 +410,10 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:5000/api/auth/logout",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/auth/logout",
               "host": [
-                "localhost"
+                "{{baseUrl}}"
               ],
-              "port": "5000",
               "path": [
                 "api",
                 "auth",
@@ -394,7 +423,7 @@
           },
           "response": [
             {
-              "name": "Logout",
+              "name": "Logout Copy",
               "originalRequest": {
                 "method": "POST",
                 "header": [],
@@ -428,7 +457,7 @@
                 },
                 {
                   "key": "date",
-                  "value": "Fri, 19 Jun 2026 04:44:34 GMT"
+                  "value": "Wed, 24 Jun 2026 11:34:55 GMT"
                 },
                 {
                   "key": "etag",
@@ -451,12 +480,8 @@
                   "value": "Express"
                 },
                 {
-                  "key": "x-railway-edge",
-                  "value": "railway/us-west2"
-                },
-                {
                   "key": "x-railway-request-id",
-                  "value": "xmf-8xmqS86tAU_OWUN5dQ"
+                  "value": "-y0k4lPtTGOPSY2SY53eZw"
                 },
                 {
                   "key": "content-length",
@@ -464,7 +489,11 @@
                 },
                 {
                   "key": "x-hikari-trace",
-                  "value": "sin1.nzn2"
+                  "value": "sin1.tr00"
+                },
+                {
+                  "key": "x-railway-edge",
+                  "value": "sin1"
                 }
               ],
               "cookie": [],
@@ -794,6 +823,117 @@
               ],
               "cookie": [],
               "body": "{\n    \"success\": true,\n    \"message\": \"Password reset successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Admin Profile",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"phone_number\":9898989898\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/update-admin-profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "update-admin-profile"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Update Admin Profile",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"phone_number\":\"9898989898\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/update-admin-profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "update-admin-profile"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "access-control-allow-credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 01 Jul 2026 12:33:34 GMT"
+                },
+                {
+                  "key": "etag",
+                  "value": "W/\"165-NOu6mubTwBcTYyIV7X2obx6bSnc\""
+                },
+                {
+                  "key": "server",
+                  "value": "railway-hikari"
+                },
+                {
+                  "key": "vary",
+                  "value": "Origin, accept-encoding"
+                },
+                {
+                  "key": "x-powered-by",
+                  "value": "Express"
+                },
+                {
+                  "key": "x-railway-request-id",
+                  "value": "gDXdJcrxTXaU-ieF9o6EoQ"
+                },
+                {
+                  "key": "content-encoding",
+                  "value": "gzip"
+                },
+                {
+                  "key": "x-hikari-trace",
+                  "value": "sin1.hs0s"
+                },
+                {
+                  "key": "x-railway-edge",
+                  "value": "sin1"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"message\": \"Profile updated successfully\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Sudhakar\",\n        \"phone_number\": 9898989898,\n        \"gender\": \"Male\",\n        \"email\": \"sudhakar@gmail.com\",\n        \"profile_picture\": null,\n        \"role\": \"admin\",\n        \"reset_password_otp\": null,\n        \"reset_password_expires\": null,\n        \"otp_verified\": false,\n        \"created_at\": \"2026-06-16T07:28:43.000Z\",\n        \"updated_at\": \"2026-07-01T12:33:34.000Z\"\n    }\n}"
             }
           ]
         }
@@ -2311,7 +2451,7 @@
       "name": "Unavailability",
       "item": [
         {
-          "name": "Create UnAvailability",
+          "name": "Create Unavailability",
           "request": {
             "method": "POST",
             "header": [],
@@ -2625,117 +2765,6 @@
               ],
               "cookie": [],
               "body": "{\n    \"success\": true,\n    \"data\": {\n        \"id\": 2,\n        \"doctor_id\": 2,\n        \"unavailable_date\": \"2026-06-21\",\n        \"reason\": \"Personal leave\",\n        \"is_full_day\": false,\n        \"start_time\": \"12:00:00\",\n        \"end_time\": \"15:00:00\",\n        \"created_at\": \"2026-06-19T05:15:01.000Z\",\n        \"updated_at\": \"2026-06-19T05:15:01.000Z\"\n    }\n}"
-            }
-          ]
-        },
-        {
-          "name": "Update Unavailability",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"reason\":\"personal leave\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/unavailability/2",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "unavailability",
-                "2"
-              ]
-            }
-          },
-          "response": [
-            {
-              "name": "Update Unavailability",
-              "originalRequest": {
-                "method": "PUT",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"reason\":\"personal leave\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/unavailability/2",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "unavailability",
-                    "2"
-                  ]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": null,
-              "header": [
-                {
-                  "key": ":status",
-                  "value": 200
-                },
-                {
-                  "key": "access-control-allow-credentials",
-                  "value": "true"
-                },
-                {
-                  "key": "content-type",
-                  "value": "application/json; charset=utf-8"
-                },
-                {
-                  "key": "date",
-                  "value": "Fri, 19 Jun 2026 05:17:02 GMT"
-                },
-                {
-                  "key": "etag",
-                  "value": "W/\"12a-2QSbT7Z9uPl4tjZ4it0iMxjefVk\""
-                },
-                {
-                  "key": "server",
-                  "value": "railway-hikari"
-                },
-                {
-                  "key": "vary",
-                  "value": "Origin, accept-encoding"
-                },
-                {
-                  "key": "x-powered-by",
-                  "value": "Express"
-                },
-                {
-                  "key": "x-railway-edge",
-                  "value": "railway/us-west2"
-                },
-                {
-                  "key": "x-railway-request-id",
-                  "value": "vdSP2XAJQmOmTqZSnpoFkQ"
-                },
-                {
-                  "key": "content-encoding",
-                  "value": "gzip"
-                },
-                {
-                  "key": "x-hikari-trace",
-                  "value": "sin1.nzn2"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n    \"success\": true,\n    \"message\": \"Unavailability updated successfully\",\n    \"data\": {\n        \"id\": 2,\n        \"doctor_id\": 2,\n        \"unavailable_date\": \"2026-06-21\",\n        \"reason\": \"personal leave\",\n        \"is_full_day\": false,\n        \"start_time\": \"12:00:00\",\n        \"end_time\": \"15:00:00\",\n        \"created_at\": \"2026-06-19T05:15:01.000Z\",\n        \"updated_at\": \"2026-06-19T05:17:02.000Z\"\n    }\n}"
             }
           ]
         },

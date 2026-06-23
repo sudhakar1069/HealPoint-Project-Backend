@@ -33,6 +33,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.22.3",
@@ -48,5 +49,8 @@
     "typescript": "^6.0.3",
     "winston": "^3.19.0",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/morgan": "^1.9.10"
   }
 }

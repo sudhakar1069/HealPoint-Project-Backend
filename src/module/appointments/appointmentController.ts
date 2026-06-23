@@ -28,7 +28,7 @@ const appointmentService = new AppointmentService(
     slotService,
     paymentRepository
 );
-
+//Booking appointment
 export const bookAppointment = asyncHandler(async (req: any, res: Response) => {
     const patientId = req.user.profile_id;
     const result = await appointmentService.bookAppointment(patientId, req.body);
@@ -39,7 +39,7 @@ export const bookAppointment = asyncHandler(async (req: any, res: Response) => {
         data: result
     });
 });
-
+//Fetching all the appointments
 export const getAllAppointments = asyncHandler(
     async (req: Request, res: Response) => {
         const page = Number(req.query.page) || 1;
@@ -72,7 +72,7 @@ export const getAllAppointments = asyncHandler(
         });
     }
 );
-
+//Fetching doctor specific appointments
 export const getDoctorAppointments = asyncHandler(
     async (req: Request, res: Response) => {
         const doctorUserId = req.user!.id;
@@ -105,7 +105,7 @@ export const getDoctorAppointments = asyncHandler(
         });
     }
 );
-
+//Fetching patient specific appointments
 export const getPatientAppointments = asyncHandler(
     async (req: Request, res: Response) => {
         const patientUserId = req.user!.id;
@@ -139,7 +139,7 @@ export const getPatientAppointments = asyncHandler(
         });
     }
 );
-
+//Fetching an appointment by ID
 export const getAppointmentById = asyncHandler(
     async (req: Request, res: Response) => {
         const appointment = await appointmentService
@@ -151,7 +151,7 @@ export const getAppointmentById = asyncHandler(
         });
     }
 );
-
+//Joining the consultation
 export const joinConsultation = asyncHandler(
     async (req: Request, res: Response) => {
         if (!req.user) {
@@ -174,7 +174,7 @@ export const joinConsultation = asyncHandler(
         });
     }
 );
-
+//Starting the consultation
 export const startConsultation = asyncHandler(
     async (req: Request, res: Response) => {
         const appointmentId = Number(req.params.id);
@@ -189,7 +189,7 @@ export const startConsultation = asyncHandler(
         });
     }
 );
-
+//Completing the consultation
 export const completeConsultation = asyncHandler(
     async (req: Request, res: Response) => {
         const appointmentId = Number(req.params.id);
@@ -206,7 +206,7 @@ export const completeConsultation = asyncHandler(
         });
     }
 );
-
+//Cancel appointment
 export const cancelAppointment = asyncHandler(
     async (req: Request, res: Response) => {
         const appointmentId = Number(req.params.id);

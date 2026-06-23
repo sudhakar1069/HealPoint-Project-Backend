@@ -1,15 +1,19 @@
 import Patient, { type PatientCreationAttributes } from "../../models/patientModel.js";
 import Doctor from "../../models/doctorModel.js";
 import { User, type userCreationAttributes } from "../../models/userModel.js";
-import { Op } from "sequelize";
+import { Op, Transaction } from "sequelize";
 
 export class UserRepository {
-    async create(user: userCreationAttributes) {
-        return await User.create(user);
+    async create(user: userCreationAttributes, transaction?: Transaction) {
+        return await User.create(
+            user, transaction ? { transaction } : {}
+        );
     }
 
-    async createPatient(data: PatientCreationAttributes) {
-        return await Patient.create(data);
+    async createPatient(data: PatientCreationAttributes, transaction?: Transaction) {
+        return await Patient.create(
+            data, transaction ? { transaction } : {}
+        );
     }
 
     async findByEmail(email: string) {
@@ -27,6 +31,22 @@ export class UserRepository {
             where: {
                 refresh_token: refreshToken,
             },
+        });
+    }
+
+    async updateAdminProfile(
+        userId: number,
+        data: Partial<{
+            name: string;
+            phone_number: string;
+            gender: "Male" | "Female" | "Others";
+            profile_picture: string;
+            password: string;
+            refresh_token: string | null;
+        }>
+    ) {
+        return await User.update(data, {
+            where: { id: userId }
         });
     }
 

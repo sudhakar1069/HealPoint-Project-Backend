@@ -2,7 +2,7 @@ import { DataTypes, Model, type Optional } from "sequelize";
 import { sequelize } from "../config/db.js";
 
 export interface DoctorAttributes {
-    id?: number;
+    id: number;
     user_id: number;
     specialization: string;
     experience_years: number;

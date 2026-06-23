@@ -108,11 +108,20 @@ export const getDoctorAvailabilityDashboard =
 
 export const getAdminEarningsReport = asyncHandler(
     async (req: Request, res: Response) => {
+
         const period = typeof req.query.period === "string"
             ? req.query.period
             : "year";
 
-        const result = await dashboardService.getAdminEarningsReport(period);
+        const year = typeof req.query.year === "string"
+            ? Number(req.query.year)
+            : undefined;
+
+        const result = await dashboardService.getAdminEarningsReport(
+            period,
+            year
+        );
+
         res.status(200).json({
             success: true,
             data: result

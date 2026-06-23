@@ -2,6 +2,7 @@ import Payment from "../../models/paymentModel.js";
 import type { PaymentCreationAttributes } from "../../models/paymentModel.js";
 import { fn, col } from "sequelize";
 import Appointment from "../../models/appointmentModel.js";
+import { Transaction } from "sequelize";
 
 export class PaymentRepository {
 
@@ -24,7 +25,8 @@ export class PaymentRepository {
     async updatePaymentSuccess(
         orderId: string,
         paymentId: string,
-        signature: string
+        signature: string,
+        transaction?: Transaction
     ) {
         await Payment.update(
             {
@@ -32,7 +34,10 @@ export class PaymentRepository {
                 razorpay_payment_id: paymentId,
                 razorpay_signature: signature,
             },
-            { where: { razorpay_order_id: orderId } }
+            {
+                where: { razorpay_order_id: orderId },
+                ...(transaction ? { transaction } : {})
+            }
         );
     }
 

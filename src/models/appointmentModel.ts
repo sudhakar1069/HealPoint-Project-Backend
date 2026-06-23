@@ -13,7 +13,7 @@ export interface AppointmentAttributes {
     status: "pending_payment" | "confirmed" | "cancelled" | "completed";
     payment_expires_at: Date | null;
     meeting_room?: string | null;
-    consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
+    consultation_status?: "scheduled" | "ongoing" | "completed" | "missed" | null;
     consultation_started_at?: Date | null;
     consultation_ended_at?: Date | null;
     review_given?: boolean;
@@ -39,7 +39,7 @@ class Appointment extends Model<
     declare status: "pending_payment" | "confirmed" | "cancelled" | "completed";
     declare payment_expires_at: Date | null;
     declare meeting_room?: string | null;
-    declare consultation_status?: "scheduled" | "ongoing" | "completed" | "missed";
+    declare consultation_status?: "scheduled" | "ongoing" | "completed" | "missed" | null;
     declare consultation_started_at?: Date | null;
     declare consultation_ended_at?: Date | null;
     declare review_given?: boolean;
@@ -125,8 +125,8 @@ Appointment.init(
                 "completed",
                 "missed",
             ),
-            allowNull: false,
-            defaultValue: "scheduled"
+            allowNull: true,
+            defaultValue: null
         },
         consultation_started_at: {
             type: DataTypes.DATE,

@@ -16,6 +16,13 @@ export class DoctorRepository {
         return await User.findOne({ where: { email } });
     }
 
+    async lockDoctorById(id: number, transaction: Transaction) {
+        return await Doctor.findByPk(id, {
+            transaction,
+            lock: transaction.LOCK.UPDATE
+        });
+    }
+
     async getAllDoctors(page: number, limit: number, filters: any) {
         const offset = (page - 1) * limit;
 
